@@ -77,7 +77,9 @@ function normalizeHackathons(hackathons) {
 
 export default async function handler(req, res) {
   if (!process.env.ADMIN_PASSWORD) {
-    return res.status(500).json({ error: 'ADMIN_PASSWORD non configure. Ajoutez-le dans app/.env.local puis relancez le serveur.' });
+    return res
+      .status(500)
+      .json({ error: 'ADMIN_PASSWORD non configure. Ajoutez-le dans Vercel (Environment Variables) ou dans app/.env.local, puis redeploy/relancez.' });
   }
   if (!isAuthorized(req)) {
     return res.status(401).json({ error: 'Unauthorized' });
