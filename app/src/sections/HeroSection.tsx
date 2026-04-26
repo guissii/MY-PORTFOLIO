@@ -108,23 +108,38 @@ export default function HeroSection() {
 
           <div ref={contentRef} className="max-w-[850px]">
             <h1 className="font-black tracking-tight text-[#f4f3ff] text-[34px] leading-[0.95] sm:text-[50px] md:text-[66px]">
-              Mohammed GICUIDSI
+              Mohammed Guissi
             </h1>
             <h2
-              className="mt-1 font-black tracking-tight text-[42px] leading-[0.95] sm:text-[58px] md:text-[74px]"
-              style={{
-                backgroundImage: 'linear-gradient(90deg, #8d5fff 0%, #c5a9ff 50%, #ffd38f 100%)',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                color: 'transparent',
-              }}
+              className="mt-1 font-black tracking-tight text-[42px] leading-[0.95] sm:text-[58px] md:text-[74px] flex flex-wrap items-center justify-center gap-x-4"
             >
-              AI Specialist
+              <span
+                style={{
+                  backgroundImage: 'linear-gradient(90deg, #8d5fff 0%, #c5a9ff 100%)',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                  color: 'transparent',
+                }}
+              >
+                AI Engineer
+              </span>
+              <span className="text-[#3a3d5c] font-light" style={{ fontSize: '0.6em' }}>/</span>
+              <span
+                style={{
+                  backgroundImage: 'linear-gradient(90deg, #ffd38f 0%, #ff9e57 100%)',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                  color: 'transparent',
+                }}
+              >
+                DevOps
+              </span>
             </h2>
 
             <p className="mt-4 mx-auto max-w-[760px] text-[#d4d6ea] text-[15px] leading-[1.55] sm:text-[17px] md:text-[19px]">
-              Eleve ingenieur en systemes communicants et securite numerique / Freelance IA & DevOps.
-              Je construis des solutions robustes, de la data au deploiement.
+              Ingénieur en systèmes communicants & sécurité numérique — spécialisé en IA appliquée,
+              MLOps et infrastructure Cloud/DevOps. Je construis des systèmes intelligents,
+              robustes et prêts pour la production.
             </p>
           </div>
 
