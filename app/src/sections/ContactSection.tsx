@@ -174,7 +174,7 @@ export default function ContactSection() {
         {/* Social Buttons */}
         <div className="flex justify-center gap-4 mb-20">
           <a
-            href="https://www.linkedin.com/in/mohammed-guissi-7851b1304/"
+            href="https://www.linkedin.com/in/mohammed-guissi-05a503319/"
             target="_blank"
             rel="noopener noreferrer"
             className="social-btn-contact inline-flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium text-sm transition-transform duration-300 hover:scale-105"

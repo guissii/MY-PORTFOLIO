@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const LOCAL_DIR = path.resolve(process.cwd(), '.cache', 'local-admin');
 const LOCAL_IMAGES_PATH = path.join(LOCAL_DIR, 'images.json');
-const LOCAL_PROJECTS_PATH = path.join(LOCAL_DIR, 'projects.json');
+const LOCAL_HACKATHONS_PATH = path.join(LOCAL_DIR, 'hackathons.json');
 
 async function readJsonFile(filePath) {
   try {
@@ -15,9 +15,9 @@ async function readJsonFile(filePath) {
   }
 }
 
-async function readProjectsFromBlob() {
+async function readHackathonsFromBlob() {
   const result = await list({ prefix: 'data/' });
-  const blob = result.blobs.find((item) => item.pathname === 'data/projects.json');
+  const blob = result.blobs.find((item) => item.pathname === 'data/hackathons.json');
   if (!blob?.url) return null;
   const response = await fetch(blob.url);
   if (!response.ok) return null;
@@ -27,7 +27,7 @@ async function readProjectsFromBlob() {
 }
 
 function slugFromPathname(pathname) {
-  const match = pathname.match(/^projects\/([^/]+)\/.+\.(jpg|jpeg|png|webp)$/i) || pathname.match(/^projects\/(.+)\.(jpg|jpeg|png|webp)$/i);
+  const match = pathname.match(/^hackathons\/([^/]+)\/.+\.(jpg|jpeg|png|webp)$/i);
   return match ? match[1] : '';
 }
 
@@ -37,23 +37,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    const hasBlobToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
     const imageMap = {};
-
+    const latestBySlug = {};
+    const hasBlobToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
     if (hasBlobToken) {
-      const result = await list({ prefix: 'projects/' });
+      const result = await list({ prefix: 'hackathons/' });
+      const hackathonList = await readHackathonsFromBlob();
       const coverBySlug = {};
-      const latestBySlug = {};
-
-      const projectList = await readProjectsFromBlob();
-      if (Array.isArray(projectList)) {
-        for (const p of projectList) {
-          if (p?.slug && typeof p.slug === 'string' && p?.coverImagePathname && typeof p.coverImagePathname === 'string') {
-            coverBySlug[p.slug] = p.coverImagePathname;
+      if (Array.isArray(hackathonList)) {
+        for (const h of hackathonList) {
+          if (h?.slug && typeof h.slug === 'string' && h?.coverImagePathname && typeof h.coverImagePathname === 'string') {
+            coverBySlug[h.slug] = h.coverImagePathname;
           }
         }
       }
-
       for (const item of result.blobs) {
         const slug = slugFromPathname(item.pathname);
         if (!slug) continue;
@@ -76,23 +73,22 @@ export default async function handler(req, res) {
 
     const existing = await readJsonFile(LOCAL_IMAGES_PATH);
     const images = Array.isArray(existing) ? existing : [];
-    const projectList = await readJsonFile(LOCAL_PROJECTS_PATH);
+    const hackathonList = await readJsonFile(LOCAL_HACKATHONS_PATH);
     const coverBySlug = {};
-    if (Array.isArray(projectList)) {
-      for (const p of projectList) {
-        if (p?.slug && typeof p.slug === 'string' && p?.coverImagePathname && typeof p.coverImagePathname === 'string') {
-          coverBySlug[p.slug] = p.coverImagePathname;
+    if (Array.isArray(hackathonList)) {
+      for (const h of hackathonList) {
+        if (h?.slug && typeof h.slug === 'string' && h?.coverImagePathname && typeof h.coverImagePathname === 'string') {
+          coverBySlug[h.slug] = h.coverImagePathname;
         }
       }
     }
-    const latestBySlug = {};
     for (const item of images) {
       const pathname = String(item?.pathname || '');
       const slug = slugFromPathname(pathname);
-      if (!slug || !item?.url) continue;
+      if (!slug) continue;
       const coverPath = coverBySlug[slug];
       if (coverPath && pathname === coverPath) {
-        imageMap[slug] = String(item.url);
+        if (item?.url) imageMap[slug] = String(item.url);
         latestBySlug[slug] = Number.POSITIVE_INFINITY;
         continue;
       }
@@ -101,7 +97,7 @@ export default async function handler(req, res) {
       const prev = latestBySlug[slug] || 0;
       if (uploadedAt >= prev) {
         latestBySlug[slug] = uploadedAt;
-        imageMap[slug] = String(item.url);
+        if (item?.url) imageMap[slug] = String(item.url);
       }
     }
     return res.status(200).json({ ok: true, images: imageMap });

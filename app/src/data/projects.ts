@@ -7,6 +7,9 @@ export interface ProjectItem {
   github: string;
   link: string;
   image: string;
+  hidden?: boolean;
+  coverImagePathname?: string;
+  description?: string;
   realizationDate: string;
   lastUpdate: string;
   role: string;

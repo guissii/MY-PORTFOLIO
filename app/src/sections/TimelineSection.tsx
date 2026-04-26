@@ -45,7 +45,7 @@ const formationItems = [
     title: 'Cycle Ingenieur',
     org: 'ENSA de Fes',
     description:
-      'Genie des Systemes Communicants & Securite Numerique. Top 30 de l\'annee, Top 10 en 2eme annee. Candidature double diplome ENSIM — Interaction Personnes-Systemes.',
+      'Genie des Systemes Communicants & Securite Numerique. Candidature double diplome ENSIM — Interaction Personnes-Systemes.',
     tags: ['ENSA Fes', 'Systemes Communicants', 'Securite Numerique'],
   },
   {
@@ -60,92 +60,62 @@ const formationItems = [
 
 export default function TimelineSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const lineRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const formationWrapRef = useRef<HTMLDivElement>(null);
-  const formationTrackRef = useRef<HTMLDivElement>(null);
+  const experienceLineRef = useRef<HTMLDivElement>(null);
+  const formationLineRef = useRef<HTMLDivElement>(null);
+  const experienceCardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const formationCardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
 
-    const mm = gsap.matchMedia();
     const ctx = gsap.context(() => {
-      // Timeline line grows on scroll
-      if (lineRef.current) {
+      const lines = [
+        { ref: experienceLineRef, triggerId: '#experience' },
+        { ref: formationLineRef, triggerId: '#formation' },
+      ];
+
+      lines.forEach(({ ref, triggerId }) => {
+        if (!ref.current) return;
+        const triggerEl = section.querySelector(triggerId);
+        if (!triggerEl) return;
         gsap.fromTo(
-          lineRef.current,
+          ref.current,
           { scaleY: 0 },
           {
             scaleY: 1,
             ease: 'none',
             scrollTrigger: {
-              trigger: section,
-              start: 'top 60%',
+              trigger: triggerEl,
+              start: 'top 75%',
               end: 'bottom 80%',
               scrub: 1,
             },
           }
         );
-      }
-
-      // Cards animate in
-      cardRefs.current.forEach((card, i) => {
-        if (!card) return;
-        const isLeft = i % 2 === 0;
-        gsap.from(card, {
-          x: isLeft ? -40 : 40,
-          opacity: 0,
-          duration: 0.7,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 80%',
-          },
-        });
       });
 
-      // Formation horizontal scroll (left -> right) on desktop
-      mm.add('(min-width: 768px)', () => {
-        const wrap = formationWrapRef.current;
-        const track = formationTrackRef.current;
-        if (!wrap || !track) return;
-
-        gsap.from(track, {
-          opacity: 0,
-          duration: 0.8,
-          ease: 'power3.out',
-          immediateRender: false,
-          scrollTrigger: {
-            trigger: wrap,
-            start: 'top 80%',
-          },
-        });
-
-        gsap.to(track, {
-          x: () => {
-            const maxShift = Math.max(0, track.scrollWidth - wrap.clientWidth);
-            return -maxShift;
-          },
-          ease: 'none',
-          scrollTrigger: {
-            trigger: wrap,
-            start: 'top top+=80',
-            end: () => {
-              const maxShift = Math.max(0, track.scrollWidth - wrap.clientWidth);
-              return `+=${Math.max(maxShift, 220)}`;
+      const animateCards = (cards: (HTMLDivElement | null)[]) => {
+        cards.forEach((card) => {
+          if (!card) return;
+          gsap.from(card, {
+            y: 16,
+            opacity: 0,
+            duration: 0.6,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: card,
+              start: 'top 85%',
             },
-            pin: true,
-            scrub: 1,
-            invalidateOnRefresh: true,
-            anticipatePin: 1,
-          },
+          });
         });
-      });
+      };
+
+      animateCards(experienceCardRefs.current);
+      animateCards(formationCardRefs.current);
     }, section);
 
     return () => {
-      mm.revert();
       ctx.revert();
     };
   }, []);
@@ -159,7 +129,7 @@ export default function TimelineSection() {
         padding: 'var(--section-pad-y) var(--section-pad-x)',
       }}
     >
-      <div className="mx-auto" style={{ maxWidth: '900px' }}>
+      <div className="mx-auto" style={{ maxWidth: '980px' }}>
         {/* Header */}
         <div className="text-center mb-20">
           <div
@@ -187,311 +157,305 @@ export default function TimelineSection() {
           </h2>
         </div>
 
-        {/* Experience */}
-        <div className="text-center mb-10">
-          <h3
-            style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: 'clamp(24px, 3vw, 34px)',
-              color: '#FFD700',
-              fontWeight: 600,
-            }}
-          >
-            Experience
-          </h3>
-        </div>
-
-        <div className="relative">
-          {/* Center Line */}
-          <div
-            ref={lineRef}
-            className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 origin-top"
-            style={{
-              backgroundColor: '#FFD700',
-              transform: 'scaleY(0)',
-            }}
-          />
-
-          {/* Items */}
-          <div className="space-y-12">
-            {experienceItems.map((item, i) => {
-              const isLeft = i % 2 === 0;
-              return (
+        <div
+          className="rounded-2xl p-6 md:p-10"
+          style={{
+            background:
+              'radial-gradient(1000px 600px at 20% -10%, rgba(255, 215, 0, 0.08), transparent 60%), radial-gradient(900px 500px at 110% 10%, rgba(124, 58, 237, 0.12), transparent 55%), rgba(13, 11, 30, 0.55)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+          }}
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12">
+            <div id="experience">
+              <div className="mb-7">
                 <div
-                  key={i}
-                  className={`relative flex items-start ${
-                    isLeft
-                      ? 'md:flex-row'
-                      : 'md:flex-row-reverse'
-                  }`}
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '12px',
+                    letterSpacing: '0.18em',
+                    color: '#FFD700',
+                    marginBottom: '10px',
+                  }}
                 >
-                  {/* Node */}
-                  <div
-                    className="absolute left-4 md:left-1/2 w-3 h-3 rounded-full -translate-x-1/2 mt-6 z-10"
-                    style={{
-                      backgroundColor: '#FFD700',
-                      border: '3px solid #3D1A45',
-                    }}
-                  />
+                  EXPERIENCE
+                </div>
+                <h3
+                  style={{
+                    fontFamily: 'var(--font-heading)',
+                    fontSize: '28px',
+                    fontWeight: 700,
+                    color: '#F0E6FF',
+                    lineHeight: 1.15,
+                  }}
+                >
+                  Un fil “signal” clair et lisible
+                </h3>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '14px',
+                    color: '#8A7A9A',
+                    marginTop: '10px',
+                    lineHeight: 1.65,
+                  }}
+                >
+                  Chaque poste = une station. Lecture rapide, sans effet lourd.
+                </p>
+              </div>
 
-                  {/* Card */}
-                  <div
-                    ref={(el) => { cardRefs.current[i] = el; }}
-                    className={`ml-10 md:ml-0 md:w-[45%] ${
-                      isLeft ? 'md:pr-12 md:text-right' : 'md:pl-12'
-                    }`}
-                  >
-                    <div
-                      className="p-6 rounded-xl"
-                      style={{
-                        backgroundColor: 'rgba(42, 10, 46, 0.6)',
-                        backdropFilter: 'blur(8px)',
-                        border: '1px solid rgba(255, 215, 0, 0.15)',
-                      }}
-                    >
+              <div className="relative">
+                <div
+                  ref={experienceLineRef}
+                  className="absolute left-3 top-0 bottom-0 w-px origin-top"
+                  style={{
+                    background:
+                      'linear-gradient(180deg, rgba(255,215,0,0.95) 0%, rgba(255,215,0,0.18) 100%)',
+                    transform: 'scaleY(0)',
+                  }}
+                />
+
+                <div className="space-y-6">
+                  {experienceItems.map((item, i) => (
+                    <div key={item.title} className="relative pl-10">
+                      <div
+                        className="absolute left-3 top-6 -translate-x-1/2 w-3 h-3 rounded-full"
+                        style={{
+                          backgroundColor: '#FFD700',
+                          boxShadow: '0 0 0 6px rgba(255, 215, 0, 0.12)',
+                        }}
+                      />
+
                       <div
                         style={{
                           fontFamily: 'var(--font-mono)',
                           fontSize: '12px',
                           color: '#FFD700',
-                          marginBottom: '8px',
+                          backgroundColor: 'rgba(255, 215, 0, 0.08)',
+                          border: '1px solid rgba(255, 215, 0, 0.18)',
+                          borderRadius: '999px',
+                          padding: '6px 10px',
+                          width: 'fit-content',
+                          marginBottom: '10px',
                         }}
                       >
                         {item.period}
                       </div>
-                      <h3
-                        style={{
-                          fontFamily: 'var(--font-heading)',
-                          fontSize: '18px',
-                          fontWeight: 600,
-                          color: '#F0E6FF',
-                          marginBottom: '4px',
-                        }}
-                      >
-                        {item.title}
-                      </h3>
+
                       <div
+                        ref={(el) => {
+                          experienceCardRefs.current[i] = el;
+                        }}
+                        className="rounded-xl p-5"
                         style={{
-                          fontFamily: 'var(--font-body)',
-                          fontSize: '13px',
-                          color: '#8A7A9A',
-                          marginBottom: '8px',
+                          backgroundColor: 'rgba(8, 9, 26, 0.7)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          boxShadow: '0 18px 40px rgba(0,0,0,0.35)',
                         }}
                       >
-                        {item.org}
-                      </div>
-                      <p
-                        style={{
-                          fontFamily: 'var(--font-body)',
-                          fontSize: '14px',
-                          color: '#C8B8D8',
-                          lineHeight: 1.7,
-                          marginBottom: item.tags.length > 0 ? '12px' : 0,
-                        }}
-                      >
-                        {item.description}
-                      </p>
-                      {item.tags.length > 0 && (
-                        <div className={`flex flex-wrap gap-1.5 ${isLeft ? 'md:justify-end' : ''}`}>
-                          {item.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              style={{
-                                fontFamily: 'var(--font-mono)',
-                                fontSize: '11px',
-                                color: '#FFD700',
-                                backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                                borderRadius: '4px',
-                                padding: '4px 10px',
-                              }}
-                            >
-                              {tag}
-                            </span>
-                          ))}
+                        <h4
+                          style={{
+                            fontFamily: 'var(--font-heading)',
+                            fontSize: '18px',
+                            fontWeight: 650,
+                            color: '#F0E6FF',
+                            lineHeight: 1.25,
+                            marginBottom: '6px',
+                          }}
+                        >
+                          {item.title}
+                        </h4>
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: '13px',
+                            color: '#8A7A9A',
+                            marginBottom: '10px',
+                          }}
+                        >
+                          {item.org}
                         </div>
-                      )}
+                        <p
+                          style={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: '14px',
+                            color: '#C8B8D8',
+                            lineHeight: 1.7,
+                            marginBottom: item.tags.length > 0 ? '12px' : 0,
+                          }}
+                        >
+                          {item.description}
+                        </p>
+                        {item.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {item.tags.map((tag) => (
+                              <span
+                                key={`${item.title}-${tag}`}
+                                style={{
+                                  fontFamily: 'var(--font-mono)',
+                                  fontSize: '11px',
+                                  color: '#E9DEFF',
+                                  backgroundColor: 'rgba(124, 58, 237, 0.12)',
+                                  border: '1px solid rgba(124, 58, 237, 0.22)',
+                                  borderRadius: '999px',
+                                  padding: '5px 10px',
+                                }}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              );
-            })}
-          </div>
-        </div>
+              </div>
+            </div>
 
-        {/* Formation */}
-        <div className="mt-24">
-          <div className="text-center mb-10">
-            <h3
-              style={{
-                fontFamily: 'var(--font-heading)',
-                fontSize: 'clamp(24px, 3vw, 34px)',
-                color: '#FFD700',
-                fontWeight: 600,
-              }}
-            >
-              Formation
-            </h3>
-            <p
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '13px',
-                color: '#8A7A9A',
-                marginTop: '8px',
-              }}
-            >
-              Defilement horizontal de gauche vers la droite avec le scroll
-            </p>
-          </div>
-
-          {/* Mobile: vertical cards for clean scrolling */}
-          <div className="md:hidden space-y-4">
-            {formationItems.map((item) => (
-              <article
-                key={`mobile-${item.title}`}
-                className="rounded-xl p-5"
-                style={{
-                  backgroundColor: 'rgba(42, 10, 46, 0.6)',
-                  backdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(255, 215, 0, 0.15)',
-                }}
-              >
+            <div id="formation">
+              <div className="mb-7">
                 <div
                   style={{
                     fontFamily: 'var(--font-mono)',
                     fontSize: '12px',
-                    color: '#FFD700',
-                    marginBottom: '8px',
-                  }}
-                >
-                  {item.period}
-                </div>
-                <h4
-                  style={{
-                    fontFamily: 'var(--font-heading)',
-                    fontSize: '20px',
-                    fontWeight: 600,
-                    color: '#F0E6FF',
-                    marginBottom: '6px',
-                  }}
-                >
-                  {item.title}
-                </h4>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: '#8A7A9A',
+                    letterSpacing: '0.18em',
+                    color: '#7C3AED',
                     marginBottom: '10px',
                   }}
                 >
-                  {item.org}
+                  FORMATION
                 </div>
+                <h3
+                  style={{
+                    fontFamily: 'var(--font-heading)',
+                    fontSize: '28px',
+                    fontWeight: 700,
+                    color: '#F0E6FF',
+                    lineHeight: 1.15,
+                  }}
+                >
+                  Une seconde ligne, plus “academique”
+                </h3>
                 <p
                   style={{
                     fontFamily: 'var(--font-body)',
                     fontSize: '14px',
-                    color: '#C8B8D8',
-                    lineHeight: 1.7,
-                    marginBottom: '12px',
+                    color: '#8A7A9A',
+                    marginTop: '10px',
+                    lineHeight: 1.65,
                   }}
                 >
-                  {item.description}
+                  Même logique de stations, mais avec un accent différent.
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  {item.tags.map((tag) => (
-                    <span
-                      key={`mobile-tag-${tag}`}
-                      style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '11px',
-                        color: '#FFD700',
-                        backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                        borderRadius: '4px',
-                        padding: '4px 10px',
-                      }}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
+              </div>
 
-          {/* Desktop: horizontal scroll synced with vertical wheel */}
-          <div ref={formationWrapRef} className="relative hidden md:block overflow-hidden">
-            <div ref={formationTrackRef} className="flex gap-8 w-max pb-2 px-1">
-              {formationItems.map((item) => (
-                <article
-                  key={item.title}
-                  className="rounded-xl p-6 min-w-[460px] max-w-[520px]"
+              <div className="relative">
+                <div
+                  ref={formationLineRef}
+                  className="absolute left-3 top-0 bottom-0 w-px origin-top"
                   style={{
-                    backgroundColor: 'rgba(42, 10, 46, 0.6)',
-                    backdropFilter: 'blur(8px)',
-                    border: '1px solid rgba(255, 215, 0, 0.15)',
+                    background:
+                      'linear-gradient(180deg, rgba(124,58,237,0.95) 0%, rgba(124,58,237,0.18) 100%)',
+                    transform: 'scaleY(0)',
                   }}
-                >
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '12px',
-                      color: '#FFD700',
-                      marginBottom: '8px',
-                    }}
-                  >
-                    {item.period}
-                  </div>
-                  <h4
-                    style={{
-                      fontFamily: 'var(--font-heading)',
-                      fontSize: '22px',
-                      fontWeight: 600,
-                      color: '#F0E6FF',
-                      marginBottom: '6px',
-                    }}
-                  >
-                    {item.title}
-                  </h4>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '14px',
-                      color: '#8A7A9A',
-                      marginBottom: '10px',
-                    }}
-                  >
-                    {item.org}
-                  </div>
-                  <p
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '14px',
-                      color: '#C8B8D8',
-                      lineHeight: 1.7,
-                      marginBottom: '12px',
-                    }}
-                  >
-                    {item.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {item.tags.map((tag) => (
-                      <span
-                        key={tag}
+                />
+
+                <div className="space-y-6">
+                  {formationItems.map((item, i) => (
+                    <div key={item.title} className="relative pl-10">
+                      <div
+                        className="absolute left-3 top-6 -translate-x-1/2 w-3 h-3 rounded-full"
+                        style={{
+                          backgroundColor: '#7C3AED',
+                          boxShadow: '0 0 0 6px rgba(124, 58, 237, 0.14)',
+                        }}
+                      />
+
+                      <div
                         style={{
                           fontFamily: 'var(--font-mono)',
-                          fontSize: '11px',
-                          color: '#FFD700',
-                          backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                          borderRadius: '4px',
-                          padding: '4px 10px',
+                          fontSize: '12px',
+                          color: '#E9DEFF',
+                          backgroundColor: 'rgba(124, 58, 237, 0.12)',
+                          border: '1px solid rgba(124, 58, 237, 0.22)',
+                          borderRadius: '999px',
+                          padding: '6px 10px',
+                          width: 'fit-content',
+                          marginBottom: '10px',
                         }}
                       >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </article>
-              ))}
+                        {item.period}
+                      </div>
+
+                      <div
+                        ref={(el) => {
+                          formationCardRefs.current[i] = el;
+                        }}
+                        className="rounded-xl p-5"
+                        style={{
+                          backgroundColor: 'rgba(8, 9, 26, 0.7)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          boxShadow: '0 18px 40px rgba(0,0,0,0.35)',
+                        }}
+                      >
+                        <h4
+                          style={{
+                            fontFamily: 'var(--font-heading)',
+                            fontSize: '18px',
+                            fontWeight: 650,
+                            color: '#F0E6FF',
+                            lineHeight: 1.25,
+                            marginBottom: '6px',
+                          }}
+                        >
+                          {item.title}
+                        </h4>
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: '13px',
+                            color: '#8A7A9A',
+                            marginBottom: '10px',
+                          }}
+                        >
+                          {item.org}
+                        </div>
+                        <p
+                          style={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: '14px',
+                            color: '#C8B8D8',
+                            lineHeight: 1.7,
+                            marginBottom: item.tags.length > 0 ? '12px' : 0,
+                          }}
+                        >
+                          {item.description}
+                        </p>
+                        {item.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {item.tags.map((tag) => (
+                              <span
+                                key={`${item.title}-${tag}`}
+                                style={{
+                                  fontFamily: 'var(--font-mono)',
+                                  fontSize: '11px',
+                                  color: '#FFD700',
+                                  backgroundColor: 'rgba(255, 215, 0, 0.08)',
+                                  border: '1px solid rgba(255, 215, 0, 0.18)',
+                                  borderRadius: '999px',
+                                  padding: '5px 10px',
+                                }}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>

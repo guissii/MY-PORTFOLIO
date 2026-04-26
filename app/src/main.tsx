@@ -32,6 +32,24 @@ function RootRouter() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
+  useEffect(() => {
+    if (route.type === 'admin') return;
+    const key = 'site_view_tracked_v1';
+    try {
+      if (sessionStorage.getItem(key) === '1') return;
+      sessionStorage.setItem(key, '1');
+    } catch {
+      void 0;
+    }
+    fetch('/api/public/track-view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: window.location.hash || '/' }),
+    }).catch(() => {
+      void 0;
+    });
+  }, [route.type]);
+
   if (route.type === 'home') {
     return <App />;
   }

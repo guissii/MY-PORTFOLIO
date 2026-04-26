@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { projects } from '@/data/projects';
+import { projects as defaultProjects, type ProjectItem } from '@/data/projects';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -38,12 +38,11 @@ function ExternalIcon() {
 
 export default function ProjectsSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const [activeDot, setActiveDot] = useState(0);
-  const [brokenImages, setBrokenImages] = useState<Record<number, boolean>>({});
+  const [projectItems, setProjectItems] = useState<ProjectItem[]>(defaultProjects);
+  const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
   const [blobImageMap, setBlobImageMap] = useState<Record<string, string>>({});
 
-  const dots = useMemo(() => projects.map((_, i) => i), []);
+  const visibleProjects = useMemo(() => projectItems.filter((p) => !p.hidden), [projectItems]);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -67,20 +66,18 @@ export default function ProjectsSection() {
   }, []);
 
   useEffect(() => {
-    const slider = sliderRef.current;
-    if (!slider) return;
-    const onScroll = () => {
-      const card = slider.querySelector('.project-card') as HTMLElement | null;
-      if (!card) return;
-      const cardStyle = window.getComputedStyle(slider);
-      const gap = Number.parseFloat(cardStyle.columnGap || cardStyle.gap || '0');
-      const step = card.offsetWidth + gap;
-      if (step <= 0) return;
-      const index = Math.round(slider.scrollLeft / step);
-      setActiveDot(Math.max(0, Math.min(projects.length - 1, index)));
+    const loadProjects = async () => {
+      try {
+        const res = await fetch('/api/public/projects');
+        const data = await res.json();
+        if (res.ok && Array.isArray(data?.projects) && data.projects.length > 0) {
+          setProjectItems(data.projects);
+        }
+      } catch {
+        // Keep local fallback projects silently.
+      }
     };
-    slider.addEventListener('scroll', onScroll, { passive: true });
-    return () => slider.removeEventListener('scroll', onScroll);
+    loadProjects();
   }, []);
 
   useEffect(() => {
@@ -98,23 +95,12 @@ export default function ProjectsSection() {
     loadBlobImages();
   }, []);
 
-  const scrollSlider = (direction: 'left' | 'right') => {
-    const slider = sliderRef.current;
-    if (!slider) return;
-    slider.scrollBy({
-      left: direction === 'right' ? slider.clientWidth * 0.9 : -slider.clientWidth * 0.9,
-      behavior: 'smooth',
-    });
-  };
-
-  const visibleTags = (tags: string[]) => tags.slice(0, 3);
-  const extraCount = (tags: string[]) => Math.max(0, tags.length - 3);
-
   const resolveImage = (slug: string, image?: string) => blobImageMap[slug] || image || '';
-  const useImage = (index: number, image?: string) => Boolean(image) && !brokenImages[index];
+  const shouldRenderImage = (slug: string, image?: string) => Boolean(image) && !brokenImages[slug];
 
   const openProject = (slug: string) => {
-    window.location.hash = `/projets/${slug}`;
+    const base = window.location.href.split('#')[0] || '';
+    window.location.replace(`${base}#/projets/${slug}`);
   };
 
   return (
@@ -153,140 +139,80 @@ export default function ProjectsSection() {
           </h2>
         </div>
 
-        <div className="relative">
-          <button
-            type="button"
-            aria-label="Precedent"
-            onClick={() => scrollSlider('left')}
-            className="hidden md:flex absolute left-[-20px] top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full items-center justify-center transition-all duration-300"
-            style={{ border: '1px solid #C9A227', color: '#C9A227', backgroundColor: 'transparent' }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#C9A227';
-              e.currentTarget.style.color = '#0D0B1E';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = '#C9A227';
-            }}
-          >
-            {'<'}
-          </button>
-
+        {visibleProjects.length === 0 ? (
           <div
-            ref={sliderRef}
-            className="flex gap-4 md:gap-6 overflow-x-auto pb-4"
-            style={{
-              scrollSnapType: 'x mandatory',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}
+            className="rounded-2xl p-8 text-center"
+            style={{ backgroundColor: '#0D0B1E', border: '1px solid rgba(255,255,255,0.12)', color: '#D2CDDE', fontFamily: 'var(--font-body)' }}
           >
-            {projects.map((project, i) => (
-              <article
-                key={project.title}
-                className="project-card shrink-0 h-[400px] rounded-2xl overflow-hidden transition-transform duration-300 group cursor-pointer w-[calc(83.333%-4px)] max-w-[320px] md:w-[calc((100%-24px)/2)] md:max-w-none lg:w-[calc((100%-48px)/3)]"
+            Aucun projet.
+          </div>
+        ) : (
+          <>
+            <article
+              className="project-card rounded-3xl overflow-hidden relative cursor-pointer group"
+              style={{ backgroundColor: '#0D0B1E', border: '1px solid rgba(201,162,39,0.22)' }}
+              onClick={() => openProject(visibleProjects[0].slug)}
+            >
+              {shouldRenderImage(visibleProjects[0].slug, resolveImage(visibleProjects[0].slug, visibleProjects[0].image)) ? (
+                <img
+                  src={resolveImage(visibleProjects[0].slug, visibleProjects[0].image)}
+                  alt={visibleProjects[0].title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                  loading="lazy"
+                  onError={() => setBrokenImages((prev) => ({ ...prev, [visibleProjects[0].slug]: true }))}
+                />
+              ) : (
+                <div
+                  className="absolute inset-0"
+                  style={{ background: gradientByCategory[visibleProjects[0].category] || gradientByCategory.Web }}
+                />
+              )}
+              <div
+                className="absolute inset-0"
                 style={{
-                  backgroundColor: '#0D0B1E',
-                  border: '1px solid rgba(201,162,39,0.2)',
-                  scrollSnapAlign: 'start',
+                  background:
+                    'linear-gradient(90deg, rgba(13,11,30,0.92) 0%, rgba(13,11,30,0.55) 45%, rgba(13,11,30,0.92) 100%)',
                 }}
-                onClick={() => openProject(project.slug)}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.border = '1px solid rgba(201,162,39,0.5)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.border = '1px solid rgba(201,162,39,0.2)';
-                }}
-              >
-                <div className="relative h-[60%]">
-                  {useImage(i, resolveImage(project.slug, project.image)) ? (
-                    <img
-                      src={resolveImage(project.slug, project.image)}
-                      alt={project.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      onError={() => setBrokenImages((prev) => ({ ...prev, [i]: true }))}
-                    />
-                  ) : (
-                    <div className="w-full h-full" style={{ background: gradientByCategory[project.category] || gradientByCategory.Web }} />
-                  )}
-                  <span
-                    className="absolute top-3 right-3 px-2 py-1 rounded-md"
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '11px',
-                      color: '#C9A227',
-                      backgroundColor: 'rgba(201,162,39,0.18)',
-                      border: '1px solid rgba(201,162,39,0.32)',
-                    }}
-                  >
-                    {project.category}
-                  </span>
+              />
+              <div className="relative p-6 md:p-10 flex flex-col min-h-[420px]">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: '#BEBAD0' }}>{visibleProjects[0].lastUpdate}</span>
                 </div>
 
-                <div className="h-[40%] p-4 flex flex-col" style={{ backgroundColor: '#0D0B1E' }}>
-                  <h3
-                    className="truncate"
+                <h3
+                  style={{
+                    fontFamily: 'var(--font-heading)',
+                    fontSize: 'clamp(28px, 4vw, 46px)',
+                    fontWeight: 700,
+                    color: '#F0E6FF',
+                    lineHeight: 1.1,
+                    marginBottom: '10px',
+                    maxWidth: '720px',
+                  }}
+                >
+                  {visibleProjects[0].title}
+                </h3>
+                <p style={{ fontFamily: 'var(--font-body)', color: '#D2CDDE', fontSize: '15px', lineHeight: 1.7, maxWidth: '720px' }}>
+                  {visibleProjects[0].subtitle}
+                </p>
+
+                <div className="mt-auto pt-6 flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    className="px-5 py-2 rounded-full transition-colors duration-300"
                     style={{
-                      fontFamily: 'var(--font-body)',
-                      color: '#F0E6FF',
-                      fontSize: '16px',
-                      fontWeight: 500,
-                      marginBottom: '6px',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '12px',
+                      backgroundColor: '#C9A227',
+                      color: '#0D0B1E',
                     }}
                   >
-                    {project.title}
-                  </h3>
-                  <p
-                    className="truncate"
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      color: '#C8C8D8',
-                      fontSize: '13px',
-                      marginBottom: '10px',
-                    }}
-                  >
-                    {project.subtitle}
-                  </p>
-
-                  <div className="flex flex-wrap gap-2">
-                    {visibleTags(project.tags).map((tag) => (
-                      <span
-                        key={`${project.title}-${tag}`}
-                        style={{
-                          fontFamily: 'var(--font-mono)',
-                          fontSize: '10px',
-                          color: '#D8D8E8',
-                          backgroundColor: 'rgba(255,255,255,0.08)',
-                          borderRadius: '999px',
-                          padding: '4px 10px',
-                        }}
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                    {extraCount(project.tags) > 0 && (
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-mono)',
-                          fontSize: '10px',
-                          color: '#A6A6B8',
-                          backgroundColor: 'rgba(255,255,255,0.1)',
-                          borderRadius: '999px',
-                          padding: '4px 10px',
-                        }}
-                      >
-                        +{extraCount(project.tags)}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-auto flex items-center justify-end gap-3">
-                    {project.github && project.github !== '#' && (
+                    Voir details
+                  </button>
+                  <div className="flex items-center gap-3 ml-auto">
+                    {visibleProjects[0].github && visibleProjects[0].github !== '#' && (
                       <a
-                        href={project.github}
+                        href={visibleProjects[0].github}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="transition-colors duration-300"
@@ -298,9 +224,9 @@ export default function ProjectsSection() {
                         <GitHubIcon />
                       </a>
                     )}
-                    {project.link && project.link !== '#' && (
+                    {visibleProjects[0].link && visibleProjects[0].link !== '#' && (
                       <a
-                        href={project.link}
+                        href={visibleProjects[0].link}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="transition-colors duration-300"
@@ -314,41 +240,81 @@ export default function ProjectsSection() {
                     )}
                   </div>
                 </div>
-              </article>
-            ))}
-          </div>
+              </div>
+            </article>
 
-          <button
-            type="button"
-            aria-label="Suivant"
-            onClick={() => scrollSlider('right')}
-            className="hidden md:flex absolute right-[-20px] top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full items-center justify-center transition-all duration-300"
-            style={{ border: '1px solid #C9A227', color: '#C9A227', backgroundColor: 'transparent' }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#C9A227';
-              e.currentTarget.style.color = '#0D0B1E';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = '#C9A227';
-            }}
-          >
-            {'>'}
-          </button>
-        </div>
+            <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {visibleProjects.slice(1).map((project) => (
+                <article
+                  key={project.slug}
+                  className="project-card rounded-2xl overflow-hidden cursor-pointer transition-transform duration-300 group"
+                  style={{ backgroundColor: '#0D0B1E', border: '1px solid rgba(255,255,255,0.12)' }}
+                  onClick={() => openProject(project.slug)}
+                  onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-4px)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
+                >
+                  <div className="relative h-[190px]">
+                    {shouldRenderImage(project.slug, resolveImage(project.slug, project.image)) ? (
+                      <img
+                        src={resolveImage(project.slug, project.image)}
+                        alt={project.title}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                        loading="lazy"
+                        onError={() => setBrokenImages((prev) => ({ ...prev, [project.slug]: true }))}
+                      />
+                    ) : (
+                      <div className="absolute inset-0" style={{ background: gradientByCategory[project.category] || gradientByCategory.Web }} />
+                    )}
+                    <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(13,11,30,0.2) 0%, rgba(13,11,30,0.92) 100%)' }} />
+                  </div>
 
-        <div className="mt-5 flex justify-center gap-2">
-          {dots.map((dot) => (
-            <span
-              key={`dot-${dot}`}
-              className="w-2.5 h-2.5 rounded-full"
-              style={{
-                backgroundColor: activeDot === dot ? '#C9A227' : 'transparent',
-                border: `1px solid ${activeDot === dot ? '#C9A227' : 'rgba(201,162,39,0.5)'}`,
-              }}
-            />
-          ))}
-        </div>
+                  <div className="p-5">
+                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 600, color: '#F0E6FF', marginBottom: '6px' }}>
+                      {project.title}
+                    </h3>
+                    <p style={{ fontFamily: 'var(--font-body)', color: '#C8C8D8', fontSize: '13px', lineHeight: 1.65, marginBottom: '12px' }}>
+                      {project.subtitle}
+                    </p>
+
+                    <div className="flex items-center justify-between gap-3">
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: '#BEBAD0' }}>{project.lastUpdate}</span>
+                      <div className="flex items-center gap-3">
+                        {project.github && project.github !== '#' && (
+                          <a
+                            href={project.github}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="transition-colors duration-300"
+                            style={{ color: '#F0E6FF' }}
+                            onClick={(e) => e.stopPropagation()}
+                            onMouseEnter={(e) => (e.currentTarget.style.color = '#C9A227')}
+                            onMouseLeave={(e) => (e.currentTarget.style.color = '#F0E6FF')}
+                          >
+                            <GitHubIcon />
+                          </a>
+                        )}
+                        {project.link && project.link !== '#' && (
+                          <a
+                            href={project.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="transition-colors duration-300"
+                            style={{ color: '#F0E6FF' }}
+                            onClick={(e) => e.stopPropagation()}
+                            onMouseEnter={(e) => (e.currentTarget.style.color = '#C9A227')}
+                            onMouseLeave={(e) => (e.currentTarget.style.color = '#F0E6FF')}
+                          >
+                            <ExternalIcon />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

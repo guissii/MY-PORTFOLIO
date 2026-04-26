@@ -39,7 +39,7 @@ export default function FloatingButtons() {
         </svg>
       </a>
       <a
-        href="https://www.linkedin.com/in/mohammed-guissi-7851b1304/"
+        href="https://www.linkedin.com/in/mohammed-guissi-05a503319/"
         target="_blank"
         rel="noopener noreferrer"
         className="w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-300 hover:scale-110"

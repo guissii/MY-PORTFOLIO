@@ -1,13 +1,30 @@
 import { useEffect, useMemo, useState } from 'react';
-import { projects } from '@/data/projects';
+import { projects as defaultProjects, type ProjectItem } from '@/data/projects';
 
 type ProjectDetailsPageProps = {
   slug: string;
 };
 
 export default function ProjectDetailsPage({ slug }: ProjectDetailsPageProps) {
-  const project = projects.find((item) => item.slug === slug);
+  const [projectItems, setProjectItems] = useState<ProjectItem[]>(defaultProjects);
   const [blobImageMap, setBlobImageMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const res = await fetch('/api/public/projects');
+        const data = await res.json();
+        if (res.ok && Array.isArray(data?.projects) && data.projects.length > 0) {
+          setProjectItems(data.projects);
+        }
+      } catch {
+        // Keep local fallback projects silently.
+      }
+    };
+    loadProjects();
+  }, []);
+
+  const project = useMemo(() => projectItems.find((item) => item.slug === slug), [projectItems, slug]);
 
   useEffect(() => {
     const loadBlobImages = async () => {
@@ -28,6 +45,38 @@ export default function ProjectDetailsPage({ slug }: ProjectDetailsPageProps) {
     if (!project) return '';
     return blobImageMap[project.slug] || project.image || '';
   }, [blobImageMap, project]);
+
+  const singleParagraph = useMemo(() => {
+    if (!project) return '';
+    const direct = typeof project.description === 'string' ? project.description.trim() : '';
+    if (direct) return direct;
+    const safeJoin = (items: unknown, sep: string) => {
+      if (!Array.isArray(items)) return '';
+      return items.map((v) => String(v || '').trim()).filter(Boolean).join(sep);
+    };
+
+    const parts: string[] = [];
+
+    const role = String(project.role || '').trim();
+    if (role) parts.push(`Role: ${role}.`);
+
+    const overview = String(project.overview || '').trim();
+    if (overview) parts.push(overview.endsWith('.') ? overview : `${overview}.`);
+
+    const highlights = safeJoin(project.highlights, '; ');
+    if (highlights) parts.push(`Points forts: ${highlights}.`);
+
+    const stack = safeJoin(project.stack, ', ');
+    if (stack) parts.push(`Stack: ${stack}.`);
+
+    const architecture = safeJoin(project.architecture, '; ');
+    if (architecture) parts.push(`Architecture: ${architecture}.`);
+
+    const tech = safeJoin(project.technicalDescription, ' ');
+    if (tech) parts.push(tech.endsWith('.') ? tech : `${tech}.`);
+
+    return parts.join(' ');
+  }, [project]);
 
   if (!project) {
     return (
@@ -126,99 +175,17 @@ export default function ProjectDetailsPage({ slug }: ProjectDetailsPageProps) {
               {project.subtitle}
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-7">
-              <article className="rounded-xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ color: '#C9A227', fontFamily: 'var(--font-mono)', fontSize: '11px', marginBottom: '6px' }}>Role</div>
-                <p style={{ color: '#E5E2F2', fontFamily: 'var(--font-body)', fontSize: '14px', lineHeight: 1.55 }}>{project.role}</p>
-              </article>
-              <article className="rounded-xl p-4 md:col-span-2" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ color: '#C9A227', fontFamily: 'var(--font-mono)', fontSize: '11px', marginBottom: '6px' }}>Vue d ensemble</div>
-                <p style={{ color: '#E5E2F2', fontFamily: 'var(--font-body)', fontSize: '14px', lineHeight: 1.65 }}>{project.overview}</p>
-              </article>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <article className="rounded-xl p-4" style={{ backgroundColor: 'rgba(201,162,39,0.08)', border: '1px solid rgba(201,162,39,0.3)' }}>
-                <h2 style={{ color: '#F0E6FF', fontFamily: 'var(--font-heading)', fontSize: '20px', marginBottom: '10px' }}>Points forts</h2>
-                <ul className="space-y-2">
-                  {project.highlights.map((item) => (
-                    <li key={`${project.slug}-${item}`} style={{ color: '#DAD5EA', fontFamily: 'var(--font-body)', fontSize: '14px', lineHeight: 1.55 }}>
-                      • {item}
-                    </li>
-                  ))}
-                </ul>
-              </article>
-              <article className="rounded-xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <h2 style={{ color: '#F0E6FF', fontFamily: 'var(--font-heading)', fontSize: '20px', marginBottom: '10px' }}>Stack technique</h2>
-                <div className="flex flex-wrap gap-2">
-                  {project.stack.map((item) => (
-                    <span
-                      key={`${project.slug}-stack-${item}`}
-                      style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '11px',
-                        color: '#D8D8E8',
-                        backgroundColor: 'rgba(255,255,255,0.08)',
-                        border: '1px solid rgba(255,255,255,0.12)',
-                        borderRadius: '999px',
-                        padding: '5px 11px',
-                      }}
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </article>
-            </div>
-
-            <article className="rounded-xl p-5 mb-6" style={{ backgroundColor: 'rgba(13,11,30,0.72)', border: '1px solid rgba(201,162,39,0.28)' }}>
-              <h2 style={{ color: '#F0E6FF', fontFamily: 'var(--font-heading)', fontSize: '22px', marginBottom: '12px' }}>Architecture technique</h2>
-              <ul className="space-y-2">
-                {project.architecture.map((item) => (
-                  <li key={`${project.slug}-arch-${item}`} style={{ color: '#E0DBEE', fontFamily: 'var(--font-body)', fontSize: '14px', lineHeight: 1.65 }}>
-                    • {item}
-                  </li>
-                ))}
-              </ul>
-            </article>
-
-            <article className="rounded-xl p-5 mb-6" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <h2 style={{ color: '#F0E6FF', fontFamily: 'var(--font-heading)', fontSize: '22px', marginBottom: '12px' }}>Description technique detaillee</h2>
-              <div className="space-y-3">
-                {project.technicalDescription.map((paragraph) => (
-                  <p
-                    key={`${project.slug}-tech-${paragraph.slice(0, 24)}`}
-                    style={{
-                      color: '#D7D2E6',
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '14px',
-                      lineHeight: 1.8,
-                    }}
-                  >
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
-            </article>
-
-            <div className="flex flex-wrap gap-2 mb-6">
-              {project.tags.map((tag) => (
-                <span
-                  key={`${project.slug}-${tag}`}
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '11px',
-                    color: '#D8D8E8',
-                    backgroundColor: 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    borderRadius: '999px',
-                    padding: '5px 11px',
-                  }}
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
+            <p
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '15px',
+                color: '#E5E2F2',
+                lineHeight: 1.85,
+                marginBottom: '22px',
+              }}
+            >
+              {singleParagraph}
+            </p>
 
             <div className="flex flex-wrap gap-3">
               {project.github && (

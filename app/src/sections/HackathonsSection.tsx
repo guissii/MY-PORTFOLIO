@@ -1,32 +1,20 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { hackathons as defaultHackathons, type HackathonItem } from '@/data/hackathons';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const hackathons = [
-  {
-    name: 'Hackathon Sante IA',
-    result: 'Lauréat - MedTriage AI',
-    period: '2025',
-    detail: 'Conception d un triage medical intelligent avec pipeline TypeScript + Python + FastAPI.',
-  },
-  {
-    name: 'Hackathon Cyber & IA',
-    result: 'Finaliste - DeepTrue',
-    period: '2025',
-    detail: 'Prototype de detection deepfakes et verification de desinformation en temps reel.',
-  },
-  {
-    name: 'AI Agents Challenge',
-    result: 'Top Projet - Agents IA autonomes',
-    period: '2026',
-    detail: 'Orchestration multi-outils LLM avec chaines d actions, observabilite et API externes.',
-  },
-];
-
 export default function HackathonsSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const [items, setItems] = useState<HackathonItem[]>(defaultHackathons);
+  const [imageMap, setImageMap] = useState<Record<string, string>>({});
+
+  const sorted = useMemo(() => {
+    const copy = [...items];
+    copy.sort((a, b) => String(b.period).localeCompare(String(a.period)));
+    return copy;
+  }, [items]);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -47,6 +35,36 @@ export default function HackathonsSection() {
     }, section);
 
     return () => ctx.revert();
+  }, []);
+
+  useEffect(() => {
+    const loadHackathons = async () => {
+      try {
+        const res = await fetch('/api/public/hackathons');
+        const data = await res.json();
+        if (res.ok && Array.isArray(data?.hackathons) && data.hackathons.length > 0) {
+          setItems(data.hackathons);
+        }
+      } catch {
+        // keep fallback silently
+      }
+    };
+    loadHackathons();
+  }, []);
+
+  useEffect(() => {
+    const loadHackathonImages = async () => {
+      try {
+        const res = await fetch('/api/public/hackathon-images');
+        const data = await res.json();
+        if (res.ok && data?.images) {
+          setImageMap(data.images);
+        }
+      } catch {
+        // keep empty map silently
+      }
+    };
+    loadHackathonImages();
   }, []);
 
   return (
@@ -86,15 +104,25 @@ export default function HackathonsSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {hackathons.map((item) => (
+          {sorted.map((item) => (
             <article
-              key={item.name}
+              key={item.slug}
               className="hackathon-card rounded-2xl p-6 transition-all duration-300"
               style={{
                 backgroundColor: '#0D0B1E',
                 border: '1px solid rgba(201, 162, 39, 0.25)',
               }}
             >
+              <div className="mb-4 overflow-hidden rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.12)', backgroundColor: '#17142A' }}>
+                {imageMap[item.slug] ? (
+                  <img src={imageMap[item.slug]} alt={item.name} className="w-full h-[140px] object-cover" loading="lazy" />
+                ) : (
+                  <div
+                    className="w-full h-[140px]"
+                    style={{ background: 'linear-gradient(135deg, rgba(141,95,255,0.35) 0%, rgba(201,162,39,0.25) 100%)' }}
+                  />
+                )}
+              </div>
               <div
                 style={{
                   fontFamily: 'var(--font-mono)',
