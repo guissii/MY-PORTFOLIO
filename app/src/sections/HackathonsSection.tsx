@@ -27,6 +27,7 @@ export default function HackathonsSection() {
         duration: 0.55,
         stagger: 0.12,
         ease: 'power3.out',
+        immediateRender: false,
         scrollTrigger: {
           trigger: section,
           start: 'top 72%',
@@ -36,6 +37,13 @@ export default function HackathonsSection() {
 
     return () => ctx.revert();
   }, []);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [items.length, Object.keys(imageMap).length]);
 
   useEffect(() => {
     const loadHackathons = async () => {

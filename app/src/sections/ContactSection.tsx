@@ -34,15 +34,14 @@ const contactItems = [
 ];
 
 const languages = [
-  { name: 'Francais', level: 'C1' },
-  { name: 'Anglais', level: 'C1 (technique)' },
+  { name: 'Français', level: 'C1' },
+  { name: 'Anglais', level: 'B2' },
   { name: 'Arabe', level: 'Natif' },
 ];
 
 const interests = [
   'Veille technologique',
   'Hackathons nationaux/internationaux',
-  'CTF & challenges securite',
   'Developpement open source',
   'Veille IA & DevOps',
   'Sport & discipline',

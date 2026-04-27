@@ -34,7 +34,7 @@ const experienceItems = [
     title: 'Enseignant — Cours de Soutien',
     org: 'Cours particuliers · Fes, Maroc',
     description:
-      'Accompagnement d\'etudiants CPGE et 1ere annee ingenierie en Mathematiques et Physique. Pedagogie adaptee, vulgarisation technique, suivi personnalise.',
+      'Accompagnement d\'élèves du baccalauréat en Mathématiques et Physique. Pédagogie adaptée, vulgarisation technique, suivi personnalisé.',
     tags: [],
   },
 ];
@@ -188,19 +188,8 @@ export default function TimelineSection() {
                     lineHeight: 1.15,
                   }}
                 >
-                  Un fil “signal” clair et lisible
+                  Expérience
                 </h3>
-                <p
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '14px',
-                    color: '#8A7A9A',
-                    marginTop: '10px',
-                    lineHeight: 1.65,
-                  }}
-                >
-                  Chaque poste = une station. Lecture rapide, sans effet lourd.
-                </p>
               </div>
 
               <div className="relative">
@@ -334,19 +323,8 @@ export default function TimelineSection() {
                     lineHeight: 1.15,
                   }}
                 >
-                  Une seconde ligne, plus “academique”
+                  Formation
                 </h3>
-                <p
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '14px',
-                    color: '#8A7A9A',
-                    marginTop: '10px',
-                    lineHeight: 1.65,
-                  }}
-                >
-                  Même logique de stations, mais avec un accent différent.
-                </p>
               </div>
 
               <div className="relative">
