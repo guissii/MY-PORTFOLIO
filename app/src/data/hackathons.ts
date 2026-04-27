@@ -17,10 +17,10 @@ export const hackathons: HackathonItem[] = [
   },
   {
     slug: 'hackathon-cyber-ia-2025',
-    name: 'Hackathon Cyber & IA — TechPost × Gemini',
+    name: 'Hackathon Cyber & IA — Devpost × Gemini',
     result: 'Finaliste — DeepTrue',
     period: '2025',
-    detail: `Hackathon organisé par TechPost en partenariat avec Google Gemini, axé sur la cybersécurité et la lutte contre la désinformation numérique. Notre projet DeepTrue est une plateforme de vérification multimodale exploitant l'API Gemini pour analyser trois types de contenus : images générées par IA (artefacts visuels, cohérence de métadonnées), vidéos deepfake (analyse temporelle, incohérences biométriques), et documents financiers ou contrats falsifiés (extraction sémantique, vérification contextuelle). Le système retourne un score de fiabilité, une explication détaillée des indices détectés et un verdict clair. Stack : Gemini Pro Vision API, Python, FastAPI, React.`,
+    detail: `Hackathon organisé sur Devpost en partenariat avec Google Gemini, axé sur la cybersécurité et la lutte contre la désinformation numérique. Notre projet DeepTrue est une plateforme de vérification multimodale exploitant l'API Gemini pour analyser trois types de contenus : images générées par IA (artefacts visuels, cohérence de métadonnées), vidéos deepfake (analyse temporelle, incohérences biométriques), et documents financiers ou contrats falsifiés (extraction sémantique, vérification contextuelle). Le système retourne un score de fiabilité, une explication détaillée des indices détectés et un verdict clair. Stack : Gemini Pro Vision API, Python, FastAPI, React.`,
   },
   {
     slug: 'cannes-innovation-2025',
