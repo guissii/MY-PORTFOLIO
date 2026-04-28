@@ -1,318 +1,235 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Mail, Phone, MapPin, Github, Globe } from 'lucide-react';
-
 gsap.registerPlugin(ScrollTrigger);
 
-const contactItems = [
-  {
-    icon: Mail,
-    label: 'guissimohammed04@gmail.com',
-    href: 'mailto:guissimohammed04@gmail.com',
-  },
-  {
-    icon: Phone,
-    label: '+212 649 878 763',
-    href: 'tel:+212649878763',
-  },
-  {
-    icon: Globe,
-    label: 'mohammedguissi.com',
-    href: 'https://mohammedguissi.com',
-  },
-  {
-    icon: Github,
-    label: 'github.com/guissii',
-    href: 'https://github.com/guissii',
-  },
-  {
-    icon: MapPin,
-    label: 'Fes, Maroc',
-    href: '#',
-  },
-];
+const IconMail = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>;
+const IconPhone = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
+const IconLinkedin = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>;
+const IconGithub = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.9a3.4 3.4 0 0 0-.9-2.6c3-.3 6.2-1.5 6.2-6.8A5.3 5.3 0 0 0 20 5a4.9 4.9 0 0 0-.1-3.7S18.7.9 16 2.7a13.4 13.4 0 0 0-7 0C6.3.9 5.1 1.3 5.1 1.3A4.9 4.9 0 0 0 5 5a5.3 5.3 0 0 0-1.3 3.7c0 5.3 3.2 6.5 6.2 6.8a3.4 3.4 0 0 0-.9 2.6V22"/></svg>;
+const IconMap = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
+const IconGlobe = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>;
+const IconStar = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
 
 const languages = [
   { name: 'Français', level: 'C1' },
   { name: 'Anglais', level: 'B2' },
-  { name: 'Arabe', level: 'Natif' },
+  { name: 'Arabe', level: 'NATIF' },
 ];
 
-const interests = [
-  'Veille technologique',
-  'Hackathons nationaux/internationaux',
-  'Developpement open source',
-  'Veille IA & DevOps',
-  'Sport & discipline',
-];
+const interests = ['Veille tech', 'Hackathons', 'Open source', 'IA & DevOps', 'Sport'];
 
 export default function ContactSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const titleWordsRef = useRef<(HTMLSpanElement | null)[]>([]);
+  const [form, setForm] = useState({ name: '', email: '', message: '' });
 
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
-
     const ctx = gsap.context(() => {
-      // Title word-by-word reveal
-      gsap.from(titleWordsRef.current.filter(Boolean), {
-        y: 30,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.12,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 70%',
-        },
-      });
-
-      // Contact items
-      gsap.from('.contact-item', {
-        y: 20,
-        opacity: 0,
-        duration: 0.5,
-        stagger: 0.1,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 60%',
-        },
-      });
-
-      // Social buttons
-      gsap.from('.social-btn-contact', {
-        scale: 0.8,
-        opacity: 0,
-        duration: 0.5,
-        stagger: 0.1,
-        ease: 'back.out(1.4)',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 50%',
-        },
-      });
+      gsap.from('.ct-anim', { y: 35, opacity: 0, duration: 0.7, stagger: 0.1, ease: 'power3.out', scrollTrigger: { trigger: section, start: 'top 65%' } });
     }, section);
-
     return () => ctx.revert();
   }, []);
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    window.location.href = `mailto:guissimohammed04@gmail.com?subject=Portfolio&body=${encodeURIComponent(`Nom: ${form.name}\nEmail: ${form.email}\n\n${form.message}`)}`;
+  };
+
   return (
-    <section
-      ref={sectionRef}
-      id="contact"
-      style={{
-        backgroundColor: 'transparent',
-        padding: '120px var(--section-pad-x) 60px',
-      }}
-    >
-      <div className="mx-auto" style={{ maxWidth: 'var(--container-max)' }}>
-        {/* Dramatic Title */}
-        <div className="text-center mb-16">
-          <h2
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 'clamp(48px, 10vw, 140px)',
-              lineHeight: 1,
-            }}
-          >
-            <span className="block">
-              <span
-                ref={(el) => { titleWordsRef.current[0] = el; }}
-                style={{ color: '#F0E6FF' }}
-              >
-                Tr
-              </span>
-              <span
-                ref={(el) => { titleWordsRef.current[1] = el; }}
-                style={{ color: '#F0E6FF', fontWeight: 700 }}
-              >
-                availlons
-              </span>
-            </span>
-            <span
-              ref={(el) => { titleWordsRef.current[2] = el; }}
-              className="block"
-              style={{ color: '#FFD700' }}
-            >
-              ENSEMBLE
-            </span>
-          </h2>
+    <section ref={sectionRef} id="contact" className="relative w-full overflow-hidden" style={{ padding: 'calc(var(--section-pad-y) * 0.8) 0', backgroundColor: '#05070d' }}>
+      
+      {/* Background Image Setup */}
+      <div 
+        className="absolute inset-0 pointer-events-none" 
+        style={{
+          backgroundImage: 'url(/projects-bg.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 1
+        }} 
+      />
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at center, rgba(5,7,12,0.1) 0%, rgba(5,7,12,0.4) 70%, rgba(5,7,12,0.8) 100%)' }} />
+      <div className="absolute inset-x-0 top-0 h-[150px] pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(5,7,12,1) 0%, transparent 100%)' }} />
+
+      <div className="mx-auto relative z-10" style={{ maxWidth: '1100px', padding: '0 var(--section-pad-x)' }}>
+        
+        <div className="text-center flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ marginBottom: '16px' }}>
+          <div className="flex items-center gap-4 mb-4">
+            <div style={{ width: '40px', height: '1px', backgroundColor: '#C8962A', opacity: 0.5 }} />
+            <span style={{ fontFamily: 'var(--font-title)', fontSize: '13px', color: '#C8962A', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase' }}>Discutons-en</span>
+            <div style={{ width: '40px', height: '1px', backgroundColor: '#C8962A', opacity: 0.5 }} />
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(48px, 6vw, 64px)', fontWeight: 600, color: '#f1f5f9', lineHeight: 1.1, letterSpacing: '-1.5px' }}>Contact</h2>
+        </div>
+        
+        <div className="text-center flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-700" style={{ marginBottom: '64px' }}>
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: '#C8962A', fontWeight: 500, marginBottom: '12px' }}>Travaillons ensemble</span>
+          <div style={{ width: '40px', height: '1px', backgroundColor: '#C8962A', opacity: 0.6 }} />
         </div>
 
-        {/* Contact Info Row */}
-        <div className="flex flex-wrap justify-center gap-8 md:gap-12 mb-10">
-          {contactItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <a
-                key={item.label}
-                href={item.href}
-                className="contact-item flex flex-col items-center gap-2 group"
-                target={item.href.startsWith('http') ? '_blank' : undefined}
-                rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-              >
-                <Icon size={32} color="#FFD700" />
-                <span
-                  className="group-hover:underline transition-all"
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '14px',
-                    color: '#C8B8D8',
-                  }}
-                >
-                  {item.label}
-                </span>
-              </a>
-            );
-          })}
-        </div>
-
-        {/* Social Buttons */}
-        <div className="flex justify-center gap-4 mb-20">
-          <a
-            href="https://www.linkedin.com/in/mohammed-guissi-05a503319/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="social-btn-contact inline-flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium text-sm transition-transform duration-300 hover:scale-105"
-            style={{ backgroundColor: '#0A66C2' }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-            </svg>
-            LinkedIn
-          </a>
-          <a
-            href="https://wa.me/212649878763"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="social-btn-contact inline-flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium text-sm transition-transform duration-300 hover:scale-105"
-            style={{ backgroundColor: '#25D366' }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-            </svg>
-            WhatsApp
-          </a>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-20">
-          <div
-            className="p-8 rounded-2xl"
-            style={{
-              backgroundColor: 'rgba(42, 10, 46, 0.5)',
-              border: '1px solid rgba(255, 215, 0, 0.1)',
-            }}
-          >
-            <div
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '12px',
-                fontWeight: 500,
-                color: '#FFD700',
-                letterSpacing: '0.2em',
-                marginBottom: '14px',
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+          
+            <form onSubmit={handleSubmit} className="group relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700" style={{ 
+                padding: '40px 36px', 
+                background: 'rgba(10, 12, 18, 0.65)',
+                borderRadius: '12px',
+                border: '1px solid rgba(200,150,42,0.15)',
+                backdropFilter: 'blur(12px)',
+                transition: 'all 0.4s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.border = '1px solid rgba(200,150,42,0.6)';
+                e.currentTarget.style.boxShadow = 'inset 0 40px 60px -40px rgba(200,150,42,0.25), 0 10px 40px -10px rgba(200,150,42,0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.border = '1px solid rgba(200,150,42,0.15)';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              LANGUES
-            </div>
-            <div className="space-y-3">
-              {languages.map((lang) => (
-                <div key={lang.name} className="flex items-center justify-between gap-6">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-heading)',
-                      fontSize: '16px',
-                      fontWeight: 600,
-                      color: '#F0E6FF',
+              {['name', 'email'].map((f) => (
+                <div key={f} style={{ marginBottom: '28px' }}>
+                  <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '10px', color: '#e2e8f0', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '8px' }}>
+                    Votre {f === 'name' ? 'nom' : 'email'}
+                  </label>
+                  <input type={f === 'email' ? 'email' : 'text'} placeholder={f === 'name' ? 'Votre nom' : 'Votre email'}
+                    value={form[f as keyof typeof form]} onChange={(e) => setForm((d) => ({ ...d, [f]: e.target.value }))}
+                    style={{ 
+                      width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(200,150,42,0.3)', 
+                      padding: '8px 0', fontFamily: 'var(--font-body)', fontSize: '14px', color: '#94a3b8', outline: 'none', transition: 'all 0.3s' 
                     }}
-                  >
-                    {lang.name}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '12px',
-                      color: '#FFD700',
-                      backgroundColor: 'rgba(255, 215, 0, 0.12)',
-                      border: '1px solid rgba(255, 215, 0, 0.15)',
-                      borderRadius: '999px',
-                      padding: '6px 12px',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {lang.level}
-                  </span>
+                    onFocus={(e) => { e.currentTarget.style.borderBottomColor = '#C8962A'; e.currentTarget.style.color = '#f1f5f9'; }}
+                    onBlur={(e) => { e.currentTarget.style.borderBottomColor = 'rgba(200,150,42,0.3)'; e.currentTarget.style.color = '#94a3b8'; }}
+                  />
                 </div>
               ))}
-            </div>
-          </div>
-
-          <div
-            className="p-8 rounded-2xl"
-            style={{
-              backgroundColor: 'rgba(42, 10, 46, 0.5)',
-              border: '1px solid rgba(255, 215, 0, 0.1)',
-            }}
-          >
-            <div
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '12px',
-                fontWeight: 500,
-                color: '#FFD700',
-                letterSpacing: '0.2em',
-                marginBottom: '14px',
-              }}
-            >
-              INTERETS
-            </div>
-            <div className="flex flex-wrap gap-2.5">
-              {interests.map((interest) => (
-                <span
-                  key={interest}
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '12px',
-                    color: '#FFD700',
-                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                    border: '1px solid rgba(255, 215, 0, 0.15)',
-                    borderRadius: '999px',
-                    padding: '8px 14px',
+              <div style={{ marginBottom: '40px' }}>
+                <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '10px', color: '#e2e8f0', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  Votre message
+                </label>
+                <textarea placeholder="Votre message" rows={3} value={form.message}
+                  onChange={(e) => setForm((d) => ({ ...d, message: e.target.value }))}
+                  style={{ 
+                    width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(200,150,42,0.3)', 
+                    padding: '8px 0', fontFamily: 'var(--font-body)', fontSize: '14px', color: '#94a3b8', outline: 'none', resize: 'none', transition: 'all 0.3s' 
                   }}
-                >
-                  {interest}
-                </span>
-              ))}
-            </div>
+                  onFocus={(e) => { e.currentTarget.style.borderBottomColor = '#C8962A'; e.currentTarget.style.color = '#f1f5f9'; }}
+                  onBlur={(e) => { e.currentTarget.style.borderBottomColor = 'rgba(200,150,42,0.3)'; e.currentTarget.style.color = '#94a3b8'; }}
+                />
+              </div>
+              <button type="submit" style={{
+                  background: '#C8962A', border: 'none', color: '#05070d', borderRadius: '6px',
+                  fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase',
+                  letterSpacing: '2px', padding: '14px 28px', cursor: 'pointer', transition: 'all 0.3s', display: 'flex', alignItems: 'center', gap: '8px'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 15px rgba(200,150,42,0.5)'; e.currentTarget.style.background = '#e3af3d'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = '#C8962A'; e.currentTarget.style.transform = 'translateY(0)'; }}
+              >
+                ENVOYER <span>→</span>
+              </button>
+            </form>
+
+          {/* RIGHT: INFOS */}
+          <div className="flex flex-col justify-center space-y-8 pl-4 lg:pl-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            {[
+              { label: 'Email', text: 'guissimohammed04@gmail.com', href: 'mailto:guissimohammed04@gmail.com', Icon: IconMail },
+              { label: 'Telephone', text: '+212 649 878 763', href: 'tel:+212649878763', Icon: IconPhone },
+              { label: 'LinkedIn', text: 'linkedin.com/in/mohammed-guissi', href: 'https://www.linkedin.com/in/mohammed-guissi-05a503319/', Icon: IconLinkedin },
+              { label: 'GitHub', text: 'github.com/guissii', href: 'https://github.com/guissii', Icon: IconGithub },
+              { label: 'Localisation', text: 'Fes, Maroc', href: '', Icon: IconMap },
+            ].map((info) => (
+              <div key={info.label} className="flex items-center gap-6 group cursor-pointer">
+                <div style={{ 
+                  width: '44px', height: '44px', borderRadius: '50%', border: '1px solid rgba(200,150,42,0.5)', 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C8962A', transition: 'all 0.3s' 
+                }}
+                className="group-hover:bg-[#C8962A] group-hover:text-[#05070d] group-hover:shadow-[0_0_15px_rgba(200,150,42,0.5)]">
+                  <info.Icon />
+                </div>
+                <div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '2px', color: '#C8962A', marginBottom: '8px', fontWeight: 600 }}>{info.label}</div>
+                  {info.href ? (
+                    <a href={info.href} target={info.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer"
+                      style={{ fontFamily: 'var(--font-body)', fontSize: '13.5px', color: '#f1f5f9', textDecoration: 'none', transition: 'color 0.3s' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#C8962A')} onMouseLeave={(e) => (e.currentTarget.style.color = '#f1f5f9')}
+                    >{info.text}</a>
+                  ) : <span style={{ fontFamily: 'var(--font-body)', fontSize: '13.5px', color: '#f1f5f9' }}>{info.text}</span>}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Footer */}
-        <div
-          className="flex flex-col md:flex-row justify-between items-center gap-4 pt-6"
-          style={{ borderTop: '1px solid rgba(255, 215, 0, 0.1)' }}
-        >
-          <span
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: '12px',
-              color: '#8A7A9A',
-            }}
-          >
-            © 2026 Mohammed Guissi. Tous droits reserves.
-          </span>
-          <span
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: '12px',
-              color: '#8A7A9A',
-            }}
-          >
-            Conçu avec passion a Fes, Maroc
-          </span>
+        {/* BOTTOM WIDGETS */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
+          
+            <div className="group relative overflow-hidden animate-in fade-in slide-in-from-bottom-10 duration-700" style={{ 
+                padding: '36px', 
+                background: 'rgba(10, 12, 18, 0.65)',
+                borderRadius: '12px',
+                border: '1px solid rgba(200,150,42,0.15)',
+                backdropFilter: 'blur(12px)',
+                transition: 'all 0.4s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.border = '1px solid rgba(200,150,42,0.6)';
+                e.currentTarget.style.boxShadow = 'inset 0 40px 60px -40px rgba(200,150,42,0.25), 0 10px 40px -10px rgba(200,150,42,0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.border = '1px solid rgba(200,150,42,0.15)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              <div className="flex items-center gap-3" style={{ marginBottom: '24px' }}>
+                <span style={{ color: '#C8962A' }}><IconGlobe /></span>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '2px', color: '#C8962A', fontWeight: 600 }}>Langues</span>
+              </div>
+              <div className="flex flex-col">
+                {languages.map((l, idx) => (
+                  <div key={l.name} className="flex items-center justify-between py-4" style={{ borderBottom: idx === languages.length - 1 ? 'none' : '1px solid rgba(200,150,42,0.1)' }}>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: '#e2e8f0' }}>{l.name}</span>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: '#C8962A', border: '1px solid rgba(200,150,42,0.3)', padding: '4px 10px', borderRadius: '4px', letterSpacing: '1px', textTransform: 'uppercase' }}>{l.level}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="group relative overflow-hidden animate-in fade-in slide-in-from-bottom-10 duration-700" style={{ 
+                padding: '36px', 
+                background: 'rgba(10, 12, 18, 0.65)',
+                borderRadius: '12px',
+                border: '1px solid rgba(200,150,42,0.15)',
+                backdropFilter: 'blur(12px)',
+                transition: 'all 0.4s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.border = '1px solid rgba(200,150,42,0.6)';
+                e.currentTarget.style.boxShadow = 'inset 0 40px 60px -40px rgba(200,150,42,0.25), 0 10px 40px -10px rgba(200,150,42,0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.border = '1px solid rgba(200,150,42,0.15)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              <div className="flex items-center gap-3" style={{ marginBottom: '28px' }}>
+                <span style={{ color: '#C8962A' }}><IconStar /></span>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '2px', color: '#C8962A', fontWeight: 600 }}>Interets</span>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {interests.map((i) => (
+                  <span key={i} style={{ 
+                    fontFamily: 'var(--font-body)', fontSize: '11px', color: '#C8962A', border: '1px solid rgba(200,150,42,0.3)', 
+                    padding: '6px 14px', borderRadius: '4px', letterSpacing: '0.5px', transition: 'all 0.3s' 
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#C8962A'; e.currentTarget.style.boxShadow = 'inset 0 0 10px rgba(200,150,42,0.1)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(200,150,42,0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
+                  >{i}</span>
+                ))}
+              </div>
+            </div>
+          
         </div>
       </div>
     </section>

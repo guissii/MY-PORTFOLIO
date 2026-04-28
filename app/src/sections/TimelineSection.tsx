@@ -1,441 +1,152 @@
 import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Tilt3D from '@/components/Tilt3D';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const experienceItems = [
-  {
-    period: 'Juin 2025 — Juil 2025',
-    title: 'Stagiaire IA, Operations IT & Cybersécurité',
-    org: 'ALTEN Maroc · Fes, Maroc',
-    description:
-      'Conception et déploiement de SAGU : pipeline NLP complet (CamemBERT + PyTorch) en production industrielle. Classification automatique de tickets clients — 96% precision, 94.8% rappel sur 8 349 tickets. Module IDS intelligent (ML) pour detection d\'anomalies reseau. Systeme de correlation d\'alertes SIEM assiste par IA.',
-    tags: ['Python', 'PyTorch', 'CamemBERT', 'Streamlit', 'Docker'],
-  },
-  {
-    period: 'Fev 2026 — Present',
-    title: 'Contributeur IA',
-    org: 'Alignerr · San Francisco, CA',
-    description:
-      'Evaluation de la qualite de prompts techniques pour LM Arena V2. Annotation de sorties LLM dans le cadre du RLHF. Redaction de prompts complexes et notation selon des criteres rigoureux. Contribution active a l\'alignement de modeles IA de grande envergure.',
-    tags: ['RLHF', 'LLM', 'Prompt Engineering', 'Evaluation IA'],
-  },
-  {
-    period: 'Dec 2024 — Present',
-    title: 'Freelance — Developpement IA, Web & Cybersécurité',
-    org: 'Independant · Fes, Maroc',
-    description:
-      'Conception et déploiement de sites web professionnels from scratch. Developpement d\'agents IA autonomes (LLM, Prompt Engineering). Integration de solutions IPS/IDS basees ML. Deploiement conteneurise avec CI/CD automatise.',
-    tags: ['React', 'TypeScript', 'Docker', 'LLM', 'CI/CD'],
-  },
-  {
-    period: '2023 — Present',
-    title: 'Enseignant — Cours de Soutien',
-    org: 'Cours particuliers · Fes, Maroc',
-    description:
-      'Accompagnement d\'élèves du baccalauréat en Mathématiques et Physique. Pédagogie adaptée, vulgarisation technique, suivi personnalisé.',
-    tags: [],
-  },
+  { period: 'JUIN 2025 — JUIL 2025', title: 'Stagiaire IA, Operations IT & Cybersécurité', org: 'ALTEN Maroc · Fes', description: 'Pipeline NLP complet (CamemBERT + PyTorch) en production. Classification auto de tickets — 96% precision sur 8 349 tickets. Module IDS intelligent (ML).', tags: ['Python', 'PyTorch', 'CamemBERT', 'Docker'] },
+  { period: 'FEV 2026 — PRESENT', title: 'Contributeur IA', org: 'Alignerr · San Francisco', description: 'Evaluation de prompts pour LM Arena V2. Annotation LLM (RLHF). Alignement de modeles IA.', tags: ['RLHF', 'LLM', 'Prompt Engineering'] },
+  { period: 'DEC 2024 — PRESENT', title: 'Freelance — IA, Web & Cyber', org: 'Independant · Fes', description: 'Sites web pro. Agents IA autonomes. Solutions IPS/IDS ML. CI/CD automatise.', tags: ['React', 'Docker', 'LLM'] },
+  { period: '2023 — PRESENT', title: 'Enseignant — Soutien', org: 'Cours particuliers · Fes', description: 'Maths et Physique bac. Pedagogie adaptee.', tags: [] },
 ];
 
 const formationItems = [
-  {
-    period: '2024 — Present',
-    title: 'Cycle Ingenieur',
-    org: 'ENSA de Fes',
-    description:
-      'Genie des Systemes Communicants & Securite Numerique. Candidature double diplome ENSIM — Interaction Personnes-Systemes.',
-    tags: ['ENSA Fes', 'Systemes Communicants', 'Securite Numerique'],
-  },
-  {
-    period: '2022 — 2024',
-    title: 'CPGE MP — Mathematiques-Physique',
-    org: 'Classes Preparatoires',
-    description:
-      'Parcours intensif en mathematiques et physique. Classe 2eme promotion (Top 2) en 2eme annee.',
-    tags: ['CPGE', 'Mathematiques', 'Physique'],
-  },
+  { period: '2024 — PRESENT', title: 'Cycle Ingenieur — ENSA Fes', org: 'ENSA Fes', description: 'Genie des Systemes Communicants & Securite Numerique.', tags: ['Systemes Communicants', 'Securite'] },
+  { period: '2022 — 2024', title: 'CPGE MP', org: 'Classes Preparatoires', description: 'Parcours intensif. Top 2 en 2eme annee.', tags: ['CPGE', 'Maths', 'Physique'] },
 ];
 
 export default function TimelineSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const experienceLineRef = useRef<HTMLDivElement>(null);
-  const formationLineRef = useRef<HTMLDivElement>(null);
-  const experienceCardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const formationCardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const expLineRef = useRef<HTMLDivElement>(null);
+  const formLineRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
-
     const ctx = gsap.context(() => {
-      const lines = [
-        { ref: experienceLineRef, triggerId: '#experience' },
-        { ref: formationLineRef, triggerId: '#formation' },
-      ];
-
-      lines.forEach(({ ref, triggerId }) => {
+      [expLineRef, formLineRef].forEach((ref) => {
         if (!ref.current) return;
-        const triggerEl = section.querySelector(triggerId);
-        if (!triggerEl) return;
-        gsap.fromTo(
-          ref.current,
-          { scaleY: 0 },
-          {
-            scaleY: 1,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: triggerEl,
-              start: 'top 75%',
-              end: 'bottom 80%',
-              scrub: 1,
-            },
-          }
-        );
+        const parent = ref.current.closest('[data-tl]');
+        if (!parent) return;
+        gsap.fromTo(ref.current, { scaleY: 0 }, { scaleY: 1, ease: 'none', scrollTrigger: { trigger: parent, start: 'top 75%', end: 'bottom 80%', scrub: 1 } });
       });
-
-      const animateCards = (cards: (HTMLDivElement | null)[]) => {
-        cards.forEach((card) => {
-          if (!card) return;
-          gsap.from(card, {
-            y: 16,
-            opacity: 0,
-            duration: 0.6,
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: card,
-              start: 'top 85%',
-            },
-          });
-        });
-      };
-
-      animateCards(experienceCardRefs.current);
-      animateCards(formationCardRefs.current);
+      section.querySelectorAll('.tl-card').forEach((card) => {
+        gsap.from(card, { y: 30, opacity: 0, duration: 0.6, ease: 'power3.out', scrollTrigger: { trigger: card, start: 'top 88%' } });
+      });
     }, section);
-
-    return () => {
-      ctx.revert();
-    };
+    return () => ctx.revert();
   }, []);
 
-  return (
-    <section
-      ref={sectionRef}
-      id="parcours"
-      style={{
-        backgroundColor: 'transparent',
-        padding: 'var(--section-pad-y) var(--section-pad-x)',
-      }}
-    >
-      <div className="mx-auto" style={{ maxWidth: '980px' }}>
-        {/* Header */}
-        <div className="text-center mb-20">
-          <div
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '12px',
-              fontWeight: 500,
-              color: '#FFD700',
-              letterSpacing: '0.2em',
-              marginBottom: '12px',
-            }}
-          >
-            PARCOURS
-          </div>
-          <h2
-            style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: 'clamp(32px, 5vw, 64px)',
-              fontWeight: 700,
-              color: '#F0E6FF',
-              lineHeight: 1.1,
-            }}
-          >
-            Experience & Formation
-          </h2>
+  const renderTL = (items: typeof experienceItems, lineRef: React.RefObject<HTMLDivElement | null>, title: string) => (
+    <div data-tl className="mb-12">
+      {/* Title */}
+      <div className="mb-12 pl-2">
+        <h3 style={{ 
+          fontFamily: 'var(--font-title)', 
+          fontSize: 'clamp(28px, 4vw, 32px)', 
+          color: '#f1f5f9', 
+          marginBottom: '10px' 
+        }}>
+          {title}
+        </h3>
+        <div style={{
+          width: '120px',
+          height: '1px',
+          background: 'linear-gradient(90deg, #C8962A 0%, #ffdf85 40%, transparent 100%)',
+          opacity: 0.8,
+          boxShadow: '0 0 10px #C8962A'
+        }} />
+      </div>
+
+      <div className="relative pl-3">
+        {/* The Golden Line */}
+        <div ref={lineRef as React.RefObject<HTMLDivElement>} className="absolute left-3 top-0 bottom-0 w-px origin-top" 
+          style={{ background: 'linear-gradient(180deg, #C8962A, rgba(200,150,42,0.05))', transform: 'scaleY(0)' }} 
+        />
+        
+        <div className="space-y-8">
+          {items.map((item) => (
+            <div key={item.title} className="relative pl-10">
+              
+              {/* Golden glowing dot */}
+              <div className="absolute left-3 top-2 -translate-x-[50%] w-[13px] h-[13px] rounded-full flex items-center justify-center bg-transparent" 
+                style={{ border: '1px solid rgba(200,150,42,0.4)', left: '0px' }}
+              >
+                <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: '#C8962A', boxShadow: '0 0 10px 2px #C8962A' }} />
+              </div>
+              
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: '#C8962A', letterSpacing: '1.5px', marginBottom: '8px', textTransform: 'uppercase', fontWeight: 600 }}>{item.period}</div>
+              
+              <Tilt3D intensity={3} scale={1.01}>
+                <div className="tl-card card-dark" style={{ 
+                  padding: '24px', 
+                  background: 'rgba(10, 12, 18, 0.65)',
+                  border: '1px solid rgba(200,150,42,0.2)',
+                  borderRadius: '8px',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  <h4 style={{ fontFamily: 'var(--font-title)', fontSize: '16px', fontWeight: 500, color: '#f1f5f9', lineHeight: 1.3, marginBottom: '6px' }}>{item.title}</h4>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: '#C8962A', marginBottom: '16px', opacity: 0.9 }}>{item.org}</div>
+                  
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '12.5px', color: '#94a3b8', lineHeight: 1.8, marginBottom: item.tags.length ? '16px' : 0 }}>{item.description}</p>
+                  
+                  {item.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {item.tags.map((t) => (
+                        <span key={`${item.title}-${t}`} style={{ 
+                          fontFamily: 'var(--font-body)', 
+                          fontSize: '9.5px', 
+                          textTransform: 'uppercase', 
+                          padding: '4px 8px', 
+                          border: '1px solid rgba(200,150,42,0.3)', 
+                          backgroundColor: 'rgba(200,150,42,0.03)', 
+                          color: '#C8962A', 
+                          borderRadius: '4px',
+                          letterSpacing: '0.5px'
+                        }}>
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Tilt3D>
+            </div>
+          ))}
         </div>
+      </div>
+    </div>
+  );
 
-        <div
-          className="rounded-2xl p-6 md:p-10"
-          style={{
-            background:
-              'radial-gradient(1000px 600px at 20% -10%, rgba(255, 215, 0, 0.08), transparent 60%), radial-gradient(900px 500px at 110% 10%, rgba(124, 58, 237, 0.12), transparent 55%), rgba(13, 11, 30, 0.55)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-          }}
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12">
-            <div id="experience">
-              <div className="mb-7">
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '12px',
-                    letterSpacing: '0.18em',
-                    color: '#FFD700',
-                    marginBottom: '10px',
-                  }}
-                >
-                  EXPERIENCE
-                </div>
-                <h3
-                  style={{
-                    fontFamily: 'var(--font-heading)',
-                    fontSize: '28px',
-                    fontWeight: 700,
-                    color: '#F0E6FF',
-                    lineHeight: 1.15,
-                  }}
-                >
-                  Expérience
-                </h3>
-              </div>
+  return (
+    <section ref={sectionRef} id="parcours" className="relative w-full overflow-hidden" style={{ padding: 'calc(var(--section-pad-y) * 0.8) 0', backgroundColor: '#05070d' }}>
+      
+      {/* Background Image Setup */}
+      <div 
+        className="absolute inset-0 pointer-events-none" 
+        style={{
+          backgroundImage: 'url(/about-bg.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center bottom',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.9
+        }} 
+      />
+      
+      {/* Mask it a bit with a gradient down */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'linear-gradient(180deg, rgba(5,7,12,0.98) 0%, rgba(5,7,12,0.92) 20%, rgba(5,7,12,0.65) 60%, rgba(5,7,12,0.15) 100%)',
+        }}
+      />
 
-              <div className="relative">
-                <div
-                  ref={experienceLineRef}
-                  className="absolute left-3 top-0 bottom-0 w-px origin-top"
-                  style={{
-                    background:
-                      'linear-gradient(180deg, rgba(255,215,0,0.95) 0%, rgba(255,215,0,0.18) 100%)',
-                    transform: 'scaleY(0)',
-                  }}
-                />
-
-                <div className="space-y-6">
-                  {experienceItems.map((item, i) => (
-                    <div key={item.title} className="relative pl-10">
-                      <div
-                        className="absolute left-3 top-6 -translate-x-1/2 w-3 h-3 rounded-full"
-                        style={{
-                          backgroundColor: '#FFD700',
-                          boxShadow: '0 0 0 6px rgba(255, 215, 0, 0.12)',
-                        }}
-                      />
-
-                      <div
-                        style={{
-                          fontFamily: 'var(--font-mono)',
-                          fontSize: '12px',
-                          color: '#FFD700',
-                          backgroundColor: 'rgba(255, 215, 0, 0.08)',
-                          border: '1px solid rgba(255, 215, 0, 0.18)',
-                          borderRadius: '999px',
-                          padding: '6px 10px',
-                          width: 'fit-content',
-                          marginBottom: '10px',
-                        }}
-                      >
-                        {item.period}
-                      </div>
-
-                      <div
-                        ref={(el) => {
-                          experienceCardRefs.current[i] = el;
-                        }}
-                        className="rounded-xl p-5"
-                        style={{
-                          backgroundColor: 'rgba(8, 9, 26, 0.7)',
-                          border: '1px solid rgba(255, 255, 255, 0.08)',
-                          boxShadow: '0 18px 40px rgba(0,0,0,0.35)',
-                        }}
-                      >
-                        <h4
-                          style={{
-                            fontFamily: 'var(--font-heading)',
-                            fontSize: '18px',
-                            fontWeight: 650,
-                            color: '#F0E6FF',
-                            lineHeight: 1.25,
-                            marginBottom: '6px',
-                          }}
-                        >
-                          {item.title}
-                        </h4>
-                        <div
-                          style={{
-                            fontFamily: 'var(--font-body)',
-                            fontSize: '13px',
-                            color: '#8A7A9A',
-                            marginBottom: '10px',
-                          }}
-                        >
-                          {item.org}
-                        </div>
-                        <p
-                          style={{
-                            fontFamily: 'var(--font-body)',
-                            fontSize: '14px',
-                            color: '#C8B8D8',
-                            lineHeight: 1.7,
-                            marginBottom: item.tags.length > 0 ? '12px' : 0,
-                          }}
-                        >
-                          {item.description}
-                        </p>
-                        {item.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {item.tags.map((tag) => (
-                              <span
-                                key={`${item.title}-${tag}`}
-                                style={{
-                                  fontFamily: 'var(--font-mono)',
-                                  fontSize: '11px',
-                                  color: '#E9DEFF',
-                                  backgroundColor: 'rgba(124, 58, 237, 0.12)',
-                                  border: '1px solid rgba(124, 58, 237, 0.22)',
-                                  borderRadius: '999px',
-                                  padding: '5px 10px',
-                                }}
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div id="formation">
-              <div className="mb-7">
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '12px',
-                    letterSpacing: '0.18em',
-                    color: '#7C3AED',
-                    marginBottom: '10px',
-                  }}
-                >
-                  FORMATION
-                </div>
-                <h3
-                  style={{
-                    fontFamily: 'var(--font-heading)',
-                    fontSize: '28px',
-                    fontWeight: 700,
-                    color: '#F0E6FF',
-                    lineHeight: 1.15,
-                  }}
-                >
-                  Formation
-                </h3>
-              </div>
-
-              <div className="relative">
-                <div
-                  ref={formationLineRef}
-                  className="absolute left-3 top-0 bottom-0 w-px origin-top"
-                  style={{
-                    background:
-                      'linear-gradient(180deg, rgba(124,58,237,0.95) 0%, rgba(124,58,237,0.18) 100%)',
-                    transform: 'scaleY(0)',
-                  }}
-                />
-
-                <div className="space-y-6">
-                  {formationItems.map((item, i) => (
-                    <div key={item.title} className="relative pl-10">
-                      <div
-                        className="absolute left-3 top-6 -translate-x-1/2 w-3 h-3 rounded-full"
-                        style={{
-                          backgroundColor: '#7C3AED',
-                          boxShadow: '0 0 0 6px rgba(124, 58, 237, 0.14)',
-                        }}
-                      />
-
-                      <div
-                        style={{
-                          fontFamily: 'var(--font-mono)',
-                          fontSize: '12px',
-                          color: '#E9DEFF',
-                          backgroundColor: 'rgba(124, 58, 237, 0.12)',
-                          border: '1px solid rgba(124, 58, 237, 0.22)',
-                          borderRadius: '999px',
-                          padding: '6px 10px',
-                          width: 'fit-content',
-                          marginBottom: '10px',
-                        }}
-                      >
-                        {item.period}
-                      </div>
-
-                      <div
-                        ref={(el) => {
-                          formationCardRefs.current[i] = el;
-                        }}
-                        className="rounded-xl p-5"
-                        style={{
-                          backgroundColor: 'rgba(8, 9, 26, 0.7)',
-                          border: '1px solid rgba(255, 255, 255, 0.08)',
-                          boxShadow: '0 18px 40px rgba(0,0,0,0.35)',
-                        }}
-                      >
-                        <h4
-                          style={{
-                            fontFamily: 'var(--font-heading)',
-                            fontSize: '18px',
-                            fontWeight: 650,
-                            color: '#F0E6FF',
-                            lineHeight: 1.25,
-                            marginBottom: '6px',
-                          }}
-                        >
-                          {item.title}
-                        </h4>
-                        <div
-                          style={{
-                            fontFamily: 'var(--font-body)',
-                            fontSize: '13px',
-                            color: '#8A7A9A',
-                            marginBottom: '10px',
-                          }}
-                        >
-                          {item.org}
-                        </div>
-                        <p
-                          style={{
-                            fontFamily: 'var(--font-body)',
-                            fontSize: '14px',
-                            color: '#C8B8D8',
-                            lineHeight: 1.7,
-                            marginBottom: item.tags.length > 0 ? '12px' : 0,
-                          }}
-                        >
-                          {item.description}
-                        </p>
-                        {item.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {item.tags.map((tag) => (
-                              <span
-                                key={`${item.title}-${tag}`}
-                                style={{
-                                  fontFamily: 'var(--font-mono)',
-                                  fontSize: '11px',
-                                  color: '#FFD700',
-                                  backgroundColor: 'rgba(255, 215, 0, 0.08)',
-                                  border: '1px solid rgba(255, 215, 0, 0.18)',
-                                  borderRadius: '999px',
-                                  padding: '5px 10px',
-                                }}
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+      <div className="mx-auto relative z-10" style={{ maxWidth: '1100px', padding: '0 var(--section-pad-x)' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
+          {renderTL(experienceItems, expLineRef, 'Expérience')}
+          {renderTL(formationItems, formLineRef, 'Formation')}
         </div>
       </div>
     </section>

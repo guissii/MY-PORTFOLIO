@@ -31,10 +31,30 @@ function isAuthorized(req) {
   return providedPassword === configuredPassword;
 }
 
+const ALLOWED_MIMES = new Set([
+  'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/svg+xml',
+  'application/pdf',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+]);
+
+function isAllowedMime(contentType) {
+  if (!contentType || typeof contentType !== 'string') return false;
+  return ALLOWED_MIMES.has(contentType.toLowerCase().trim());
+}
+
 function extensionFromMime(contentType) {
-  if (contentType === 'image/png') return 'png';
-  if (contentType === 'image/webp') return 'webp';
-  return 'jpg';
+  const ct = String(contentType).toLowerCase().trim();
+  if (ct === 'image/png') return 'png';
+  if (ct === 'image/webp') return 'webp';
+  if (ct === 'image/gif') return 'gif';
+  if (ct === 'image/avif') return 'avif';
+  if (ct === 'image/svg+xml') return 'svg';
+  if (ct === 'application/pdf') return 'pdf';
+  if (ct === 'application/vnd.ms-powerpoint') return 'ppt';
+  if (ct === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') return 'pptx';
+  if (ct.startsWith('image/')) return 'jpg';
+  return 'bin';
 }
 
 export default async function handler(req, res) {
@@ -58,8 +78,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'slug, contentType and base64Data are required' });
     }
 
-    if (!String(contentType).startsWith('image/')) {
-      return res.status(400).json({ error: 'Only image files are allowed' });
+    if (!isAllowedMime(contentType)) {
+      return res.status(400).json({ error: 'Type de fichier non supporté. Formats acceptés : Images (jpg, png, webp), PDF, PowerPoint (ppt, pptx).' });
     }
 
     const effectiveCollection = collection === 'hackathons' ? 'hackathons' : 'projects';
@@ -69,8 +89,10 @@ export default async function handler(req, res) {
       effectiveCollection === 'hackathons' ? `hackathons/${normalizedSlug}/${Date.now()}.${ext}` : `projects/${normalizedSlug}/${Date.now()}.${ext}`;
     const buffer = Buffer.from(String(base64Data), 'base64');
 
-    if (buffer.byteLength > 2 * 1024 * 1024) {
-      return res.status(400).json({ error: 'Image too large (max 2MB)' });
+    const isDocument = String(contentType).includes('pdf') || String(contentType).includes('powerpoint') || String(contentType).includes('presentation');
+    const maxSize = isDocument ? 10 * 1024 * 1024 : 4 * 1024 * 1024; // 10MB for docs, 4MB for images
+    if (buffer.byteLength > maxSize) {
+      return res.status(400).json({ error: `Fichier trop volumineux (max ${isDocument ? '10' : '4'}MB)` });
     }
 
     const hasBlobToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN);

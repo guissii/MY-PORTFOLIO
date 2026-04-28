@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.tsx';
-import NeuralNetworkCanvas from '@/components/NeuralNetworkCanvas';
 import ProjectDetailsPage from '@/pages/ProjectDetailsPage';
+import HackathonDetailsPage from '@/pages/HackathonDetailsPage';
 import AdminPhotosPage from '@/pages/AdminPhotosPage';
 
 type Route =
   | { type: 'home' }
   | { type: 'project'; slug: string }
+  | { type: 'hackathon'; slug: string }
   | { type: 'admin' };
 
 const parseHashRoute = (): Route => {
@@ -19,6 +20,10 @@ const parseHashRoute = (): Route => {
   if (hash.startsWith('/projets/')) {
     const slug = hash.replace('/projets/', '').trim();
     if (slug) return { type: 'project', slug };
+  }
+  if (hash.startsWith('/hackathons/')) {
+    const slug = hash.replace('/hackathons/', '').trim();
+    if (slug) return { type: 'hackathon', slug };
   }
   return { type: 'home' };
 };
@@ -55,12 +60,12 @@ function RootRouter() {
   }
 
   return (
-    <div className="relative min-h-screen" style={{ backgroundColor: '#08091A' }}>
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <NeuralNetworkCanvas />
-      </div>
+    <div className="relative min-h-screen" style={{ backgroundColor: '#05070d' }}>
       <div className="relative z-10">
-        {route.type === 'admin' ? <AdminPhotosPage /> : <ProjectDetailsPage slug={route.slug} />}
+        {route.type === 'admin' ? <AdminPhotosPage /> : 
+         route.type === 'project' ? <ProjectDetailsPage slug={route.slug} /> : 
+         route.type === 'hackathon' ? <HackathonDetailsPage slug={route.slug} /> : null
+        }
       </div>
     </div>
   );

@@ -7,15 +7,11 @@ import ProjectsSection from '@/sections/ProjectsSection';
 import HackathonsSection from '@/sections/HackathonsSection';
 import CertsSection from '@/sections/CertsSection';
 import ContactSection from '@/sections/ContactSection';
-import FloatingButtons from '@/components/FloatingButtons';
-import NeuralNetworkCanvas from '@/components/NeuralNetworkCanvas';
-
+import Preloader from '@/components/Preloader';
 export default function App() {
   return (
-    <div className="relative min-h-screen" style={{ backgroundColor: '#08091A' }}>
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <NeuralNetworkCanvas />
-      </div>
+    <div className="relative min-h-screen" style={{ backgroundColor: '#0f172a' }}>
+      <Preloader />
       <div className="relative z-10">
         <Navigation />
         <main>
@@ -28,7 +24,26 @@ export default function App() {
           <CertsSection />
           <ContactSection />
         </main>
-        <FloatingButtons />
+
+        <footer
+          style={{
+            borderTop: '1px solid rgba(139, 92, 246, 0.1)',
+            padding: '40px 0',
+            textAlign: 'center',
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: '12px',
+              color: '#64748b',
+              textTransform: 'uppercase',
+              letterSpacing: '1.5px',
+            }}
+          >
+            © 2026 Mohammed Guissi — Tous droits reserves
+          </p>
+        </footer>
       </div>
     </div>
   );
