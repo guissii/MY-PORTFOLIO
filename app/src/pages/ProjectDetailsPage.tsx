@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { projects as defaultProjects, type ProjectItem } from '@/data/projects';
 import MediaGallery from '@/components/MediaGallery';
+import gsap from 'gsap';
 
 type ProjectDetailsPageProps = {
   slug: string;
