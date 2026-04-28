@@ -15,8 +15,8 @@ async function readJsonFile(filePath) {
 }
 
 /**
- * Returns ALL media files (images, PDFs, PPTx) for a given project slug.
- * GET /api/public/project-media?slug=my-project
+ * Returns ALL media files (images, PDFs, PPTx) for a given collection and slug.
+ * GET /api/public/media?collection=projects&slug=my-project
  */
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -24,6 +24,8 @@ export default async function handler(req, res) {
   }
 
   try {
+    const passedCollection = String(req.query?.collection || '').trim();
+    const collectionName = passedCollection === 'hackathons' ? 'hackathons' : 'projects';
     const slug = String(req.query?.slug || '').trim().toLowerCase();
     if (!slug) {
       return res.status(200).json({ ok: true, media: [] });
@@ -33,9 +35,8 @@ export default async function handler(req, res) {
     const media = [];
 
     if (hasBlobToken) {
-      // Fetch from Vercel Blob — prefix-search for all files under projects/<slug>/
       try {
-        const result = await list({ prefix: `projects/${slug}/` });
+        const result = await list({ prefix: `${collectionName}/${slug}/` });
         for (const item of result.blobs) {
           if (!item?.url || !item?.pathname) continue;
           media.push({
@@ -46,18 +47,16 @@ export default async function handler(req, res) {
           });
         }
       } catch {
-        // Blob listing failed — return empty gracefully
+        // Blob listing failed
       }
       return res.status(200).json({ ok: true, media });
     }
 
-    // Local fallback — read from cache
     const existing = await readJsonFile(LOCAL_IMAGES_PATH);
     const images = Array.isArray(existing) ? existing : [];
     for (const item of images) {
       const pathname = String(item?.pathname || '');
-      // Match files that start with projects/<slug>/
-      if (pathname.startsWith(`projects/${slug}/`) || pathname.startsWith(`projects/${slug}.`)) {
+      if (pathname.startsWith(`${collectionName}/${slug}/`) || pathname.startsWith(`${collectionName}/${slug}.`)) {
         if (item?.url) {
           media.push({
             url: String(item.url),
@@ -70,7 +69,6 @@ export default async function handler(req, res) {
     }
     return res.status(200).json({ ok: true, media });
   } catch {
-    // Total fallback — never crash the API
     return res.status(200).json({ ok: true, media: [] });
   }
 }

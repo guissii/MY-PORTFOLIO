@@ -344,9 +344,7 @@ export default function MediaGallery({ slug, collection, fallbackImage }: MediaG
     const fetchMedia = async () => {
       setLoading(true);
       try {
-        const endpoint = collection === 'hackathons'
-          ? `/api/public/hackathon-media?slug=${encodeURIComponent(slug)}`
-          : `/api/public/project-media?slug=${encodeURIComponent(slug)}`;
+        const endpoint = `/api/public/media?collection=${encodeURIComponent(collection)}&slug=${encodeURIComponent(slug)}`;
         
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout

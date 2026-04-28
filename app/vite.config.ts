@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
     "/api/public/projects": path.resolve(__dirname, "./api/public/projects.js"),
     "/api/public/project-images": path.resolve(__dirname, "./api/public/project-images.js"),
     "/api/public/hackathons": path.resolve(__dirname, "./api/public/hackathons.js"),
-    "/api/public/hackathon-images": path.resolve(__dirname, "./api/public/hackathon-images.js"),
+    "/api/public/media": path.resolve(__dirname, "./api/public/media.js"),
     "/api/public/track-view": path.resolve(__dirname, "./api/public/track-view.js"),
   }
 
