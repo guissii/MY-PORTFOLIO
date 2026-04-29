@@ -45,7 +45,7 @@ const categories = [
   { 
     label: 'RESEAUX / CYBER', 
     icon: <ShieldIcon />,
-    skills: ['GNS3 · Cisco IOS · Wireshark', 'Nmap · VPN · PKI · Zero Trust', 'IDS/IPS · SIEM · Monitoring', 'VLAN · Routage · TCP/IP', 'SOC · Pentest · Hardening'] 
+    skills: ['GNS3 · Cisco IOS · Wireshark', 'Nmap · VPN · PKI · Zero Trust', 'VLAN · Routage · TCP/IP'] 
   },
 ];
 
@@ -70,10 +70,7 @@ export default function SkillsSection() {
       
       {/* Very light mask ONLY on the far left edge just to keep text readable, COMPLETELY transparent on right */}
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'linear-gradient(90deg, rgba(5,7,12,0.95) 0%, rgba(5,7,12,0.6) 40%, transparent 60%)',
-        }}
+        className="absolute inset-0 pointer-events-none skills-mask"
       />
 
       <div className="mx-auto relative z-10 w-full" style={{ maxWidth: 'var(--container-max)', padding: '0 var(--section-pad-x)' }}>

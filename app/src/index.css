@@ -289,10 +289,22 @@
     opacity: 1;
   }
 
+  .skills-mask {
+    background: linear-gradient(90deg, rgba(5, 7, 12, 0.95) 0%, rgba(5, 7, 12, 0.6) 40%, transparent 60%);
+  }
+
   @media (max-width: 1024px) {
     .hero-bg {
       background-position: 80% top;
       opacity: 1;
+    }
+
+    .skills-bg {
+      background-position: 85% top;
+    }
+
+    .skills-mask {
+      background: linear-gradient(90deg, rgba(5, 7, 12, 0.7) 0%, rgba(5, 7, 12, 0.35) 45%, transparent 70%);
     }
   }
 
@@ -300,6 +312,14 @@
     .hero-bg {
       background-position: 85% top;
       opacity: 1;
+    }
+
+    .skills-bg {
+      background-position: 90% top;
+    }
+
+    .skills-mask {
+      background: transparent;
     }
   }
 
